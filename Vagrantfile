@@ -15,6 +15,7 @@ $no_proxy = ENV['NO_PROXY'] || ENV['no_proxy'] || "127.0.0.1,localhost"
 end
 $no_proxy += ",10.0.2.15,10.10.17.4"
 $socks_proxy = ENV['socks_proxy'] || ENV['SOCKS_PROXY'] || ""
+$deployment_type = ENV['DEPLOY'] || "docker"
 
 Vagrant.configure(2) do |config|
   config.vm.provider :libvirt
@@ -72,8 +73,6 @@ Vagrant.configure(2) do |config|
   # Deploy services
   config.vm.provision 'shell', inline: <<-SHELL 
     cd /vagrant
-    docker swarm init --advertise-addr 10.10.17.4
-    make build
-    make deploy
+    ./#{$deployment_type}_deploy.sh 10.10.17.4
   SHELL
 end

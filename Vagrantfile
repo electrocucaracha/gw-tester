@@ -31,8 +31,8 @@ Vagrant.configure(2) do |config|
 
   [:virtualbox, :libvirt].each do |provider|
   config.vm.provider provider do |p|
-      p.cpus = 1
-      p.memory = 1024
+      p.cpus = 2
+      p.memory = 2048
     end
   end
 
@@ -71,8 +71,14 @@ Vagrant.configure(2) do |config|
     fi
   SHELL
   # Deploy services
-  config.vm.provision 'shell', inline: <<-SHELL 
-    cd /vagrant
-    ./#{$deployment_type}_deploy.sh 10.10.17.4
-  SHELL
+  config.vm.provision 'shell', privileged: false do |sh|
+    sh.env = {
+      'DEPLOYMENT_TYPE': "#{$deployment_type}",
+      'HOST_IP': "10.10.17.4"
+    }
+    sh.inline = <<-SHELL
+      cd /vagrant
+      ./deploy.sh
+    SHELL
+  end
 end

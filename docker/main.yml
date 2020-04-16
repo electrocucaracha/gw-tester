@@ -14,9 +14,9 @@ services:
   enb:
     image: electrocucaracha/enb
     build:
-      context: ./enb
+      context: ../enb
     volumes:
-      - ./enb/enb_default.yml:/etc/enb.yml
+      - ../enb/enb_default.yml:/etc/enb.yml
     networks:
       lte-s1u:
         ipv4_address: 172.21.0.11
@@ -31,22 +31,22 @@ services:
   mme:
     image: electrocucaracha/mme
     build:
-      context: ./mme
+      context: ../mme
     volumes:
-      - ./mme/mme_default.yml:/etc/mme.yml
+      - ../mme/mme_default.yml:/etc/mme.yml
     networks:
       lte-s11:
         ipv4_address: 172.22.0.12
       lte-s1c:
         ipv4_address: 172.21.1.12
-    cap_add:
-      - NET_ADMIN
+    depends_on:
+      - sgw
   sgw:
     image: electrocucaracha/sgw
     build:
-      context: ./sgw
+      context: ../sgw
     volumes:
-      - ./sgw/sgw_default.yml:/etc/sgw.yml
+      - ../sgw/sgw_default.yml:/etc/sgw.yml
     networks:
       lte-s11:
         ipv4_address: 172.22.0.13
@@ -56,17 +56,14 @@ services:
         ipv4_address: 172.25.0.13
       lte-s5c:
         ipv4_address: 172.25.1.13
-    depends_on:
-      - mme
-      - pgw
     cap_add:
       - NET_ADMIN
   pgw:
     image: electrocucaracha/pgw
     build:
-      context: ./pgw
+      context: ../pgw
     volumes:
-      - ./pgw/pgw_default.yml:/etc/pgw.yml
+      - ../pgw/pgw_default.yml:/etc/pgw.yml
     networks:
       lte-s5u:
         ipv4_address: 172.25.0.14

@@ -8,11 +8,11 @@
 ##############################################################################
 
 build:
-	@docker-compose --file docker-compose.yml --file docker-compose-networks-overlay.yml --file docker-compose.demo.yml build --compress --force-rm
+	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml build --compress --force-rm
 	@docker image prune --force
 logs:
-	@docker-compose --file docker-compose.yml --file docker-compose-networks-overlay.yml --file docker-compose.demo.yml logs --follow
+	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml logs --follow
 deploy: undeploy
-	@docker-compose --file docker-compose.yml --file docker-compose-networks-overlay.yml --file docker-compose.demo.yml up --force-recreate --detach --no-build
+	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
 undeploy:
-	@docker-compose --file docker-compose.yml --file docker-compose-networks-overlay.yml --file docker-compose.demo.yml down --remove-orphans
+	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml down --remove-orphans

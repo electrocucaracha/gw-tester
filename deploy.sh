@@ -13,6 +13,12 @@ set -o xtrace
 set -o errexit
 set -o nounset
 
-docker swarm init --advertise-addr "$1"
-make build
-make deploy
+case ${DEPLOYMENT_TYPE:-docker} in
+    docker)
+        newgrp docker <<EONG
+        docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
+        make build
+        make deploy
+EONG
+    ;;
+esac

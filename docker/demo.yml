@@ -24,7 +24,7 @@ services:
   external_client:
     image: electrocucaracha/ue-ext
     build:
-      context: ./ue-ext
+      context: ../ue-ext
     networks:
       lte-euu:
         ipv4_address: 10.0.3.201

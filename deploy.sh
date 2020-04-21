@@ -15,10 +15,25 @@ set -o nounset
 
 case ${DEPLOYMENT_TYPE:-docker} in
     docker)
-        newgrp docker <<EONG
-        docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
+        sudo docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
         make build
         make deploy
+    ;;
+    k8s)
+        make build
+        newgrp docker <<EONG
+        kind create cluster --name k8s --config=./k8s/kind-config.yaml
 EONG
+        kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.12.0/Documentation/kube-flannel.yml
+        pushd "$(mktemp -d)"
+        curl -Lo cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz
+        tar xvf cni-plugins.tgz
+        for id in $(sudo docker ps -q --filter "ancestor=$(sudo docker images --filter=reference='kindest/node*' -q)"); do
+            for plugin in flannel bridge macvlan; do
+                sudo docker cp $plugin "$id:/opt/cni/bin/$plugin"
+            done
+        done
+        popd
+        ./k8s/"${MULTI_CNI:-multus}"/deploy.sh
     ;;
 esac

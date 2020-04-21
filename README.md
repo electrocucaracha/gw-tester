@@ -47,7 +47,7 @@ supports two Virtualization providers (Libvirt and VirtualBox).
 Once Vagrant is installed, it's possible to deploy the demo with the
 following instruction:
 
-    $ vagrant up
+    $ DEPLOY=k8s vagrant up
 
 ### Post-provision
 
@@ -56,7 +56,7 @@ check the logs of the different containers.
 
     $ vagrant ssh
     $ cd /vagrant
-    $ make logs
+    $ make k8s-logs
 
 [1]: https://wmnsk.com/posts/20200116_gw-tester/
 [2]: https://www.vagrantup.com/

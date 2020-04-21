@@ -8,11 +8,15 @@
 ##############################################################################
 
 build:
-	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml build --compress --force-rm
-	@docker image prune --force
-logs:
-	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml logs --follow
+	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml build --compress --force-rm
+	sudo docker image prune --force
+docker-logs:
+	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml logs --follow
 deploy: undeploy
-	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
+	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
 undeploy:
-	@docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml down --remove-orphans
+	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml down --remove-orphans
+k8s-logs:
+	for component in enb mme pgw sgw ; do \
+		kubectl logs $$component ; \
+	done

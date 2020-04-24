@@ -16,6 +16,7 @@ end
 $no_proxy += ",10.0.2.15,10.10.17.4"
 $socks_proxy = ENV['socks_proxy'] || ENV['SOCKS_PROXY'] || ""
 $deployment_type = ENV['DEPLOY'] || "docker"
+$cni_type = ENV['CNI'] || "multus"
 
 Vagrant.configure(2) do |config|
   config.vm.provider :libvirt
@@ -64,7 +65,7 @@ Vagrant.configure(2) do |config|
         ;;
     esac
     # NOTE: Shorten link -> https://github.com/electrocucaracha/pkg-mgr_scripts
-    curl -fsSL http://bit.ly/install_pkg | PKG="docker docker-compose make kind kubectl" bash
+    curl -fsSL http://bit.ly/install_pkg | PKG="docker docker-compose make" bash
     if cat /proc/sys/net/ipv4/ip_forward | grep 0; then
         sudo sysctl -w net.ipv4.ip_forward=1
         sudo sed -i "s/#net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/g" /etc/sysctl.conf
@@ -74,11 +75,12 @@ Vagrant.configure(2) do |config|
   config.vm.provision 'shell', privileged: false do |sh|
     sh.env = {
       'DEPLOYMENT_TYPE': "#{$deployment_type}",
+      'MULTI_CNI': "#{$cni_type}",
       'HOST_IP': "10.10.17.4"
     }
     sh.inline = <<-SHELL
       cd /vagrant
-      ./deploy.sh
+      ./deploy.sh | tee ~/deploy.log
     SHELL
   end
 end

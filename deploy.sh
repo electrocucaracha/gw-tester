@@ -20,6 +20,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
         make deploy
     ;;
     k8s)
+        curl -fsSL http://bit.ly/install_pkg | PKG="kind kubectl" bash
         make build
         newgrp docker <<EONG
         kind create cluster --name k8s --config=./k8s/kind-config.yaml

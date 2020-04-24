@@ -50,9 +50,6 @@ spec:
   containers:
   - image: electrocucaracha/mme
     name: mme
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN"]
     command: ["/usr/local/bin/mme", "-config", "/etc/gw/config.yml"]
     volumeMounts:
       - name: config-volume

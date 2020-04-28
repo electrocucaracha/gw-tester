@@ -19,6 +19,7 @@ metadata:
       { "name": "lte-s1u", "interfaceRequest": "eth3", "ips": [ "172.21.0.11" ] }
     ]'
 spec:
+  restartPolicy: OnFailure
   containers:
   - image: electrocucaracha/enb
     name: enb
@@ -47,6 +48,7 @@ metadata:
       { "name": "lte-s1c", "interfaceRequest": "eth2", "ips": [ "172.21.1.12" ] }
     ]'
 spec:
+  restartPolicy: OnFailure
   containers:
   - image: electrocucaracha/mme
     name: mme
@@ -74,6 +76,7 @@ metadata:
       { "name": "lte-s5c", "interfaceRequest": "eth4", "ips": [ "172.25.1.13" ] }
     ]'
 spec:
+  restartPolicy: OnFailure
   containers:
   - image: electrocucaracha/sgw
     name: sgw
@@ -103,6 +106,7 @@ metadata:
       { "name": "lte-sgi", "interfaceRequest": "eth3", "ips": [ "10.0.1.254" ] }
     ]'
 spec:
+  restartPolicy: OnFailure
   containers:
   - image: electrocucaracha/mme
     name: pgw
@@ -120,4 +124,3 @@ spec:
         items:
           - key: pgw
             path: config.yml
----

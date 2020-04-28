@@ -13,9 +13,11 @@ set -o errexit
 set -o nounset
 
 kubectl apply -f https://raw.githubusercontent.com/intel/multus-cni/v3.4.1/images/multus-daemonset.yml
-printf "Waiting for Multus-CNI..."
-until kubectl get pods -n kube-system | grep "kube-multus-.*Running" > /dev/null; do
-    printf "."
-    sleep 2
+for daemonset in $(kubectl get daemonset -n kube-system | grep kube-multus | awk '{print $1}'); do
+    echo "Waiting for $daemonset to successfully rolled out"
+    if ! kubectl rollout status "daemonset/$daemonset" -n kube-system --timeout=5m > /dev/null; then
+        echo "The $daemonset daemonset has not started properly"
+        exit 1
+    fi
 done
 kubectl apply -f k8s/multus/

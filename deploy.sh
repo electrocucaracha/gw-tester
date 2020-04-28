@@ -15,13 +15,13 @@ set -o nounset
 
 case ${DEPLOYMENT_TYPE:-docker} in
     docker)
+        curl -fsSL http://bit.ly/install_pkg | PKG="docker-compose" bash
         sudo docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
         make build
         make deploy
     ;;
     k8s)
         curl -fsSL http://bit.ly/install_pkg | PKG="kind kubectl" bash
-        make build
         newgrp docker <<EONG
         kind create cluster --name k8s --config=./k8s/kind-config.yaml
 EONG

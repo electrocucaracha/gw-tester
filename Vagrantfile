@@ -23,7 +23,7 @@ Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox
 
   config.vm.box = "peru/ubuntu-18.04-server-amd64"
-  config.vm.box_version = "20200401.01"
+  config.vm.box_version = "20200424.01"
   config.vm.synced_folder './', '/vagrant', type: "nfs"
 
   # NOTE: A private network set up is required by NFS. This is due
@@ -65,7 +65,7 @@ Vagrant.configure(2) do |config|
         ;;
     esac
     # NOTE: Shorten link -> https://github.com/electrocucaracha/pkg-mgr_scripts
-    curl -fsSL http://bit.ly/install_pkg | PKG="docker docker-compose make" bash
+    curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
     if cat /proc/sys/net/ipv4/ip_forward | grep 0; then
         sudo sysctl -w net.ipv4.ip_forward=1
         sudo sed -i "s/#net.ipv4.ip_forward=.*/net.ipv4.ip_forward=1/g" /etc/sysctl.conf

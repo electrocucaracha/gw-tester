@@ -10,6 +10,8 @@
 build:
 	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml build --compress --force-rm
 	sudo docker image prune --force
+pull:
+	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml pull
 docker-logs:
 	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml logs --follow
 deploy: undeploy

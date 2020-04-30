@@ -17,7 +17,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
     docker)
         curl -fsSL http://bit.ly/install_pkg | PKG="docker-compose" bash
         sudo docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
-        make build
+        make pull
         make deploy
     ;;
     k8s)

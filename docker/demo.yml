@@ -22,14 +22,12 @@ services:
     cap_add:
       - NET_ADMIN
   external_client:
-    image: electrocucaracha/ue-ext
-    build:
-      context: ../ue-ext
+    image: alpine:3.11
     networks:
       lte-euu:
         ipv4_address: 10.0.3.201
     depends_on:
       - http_server
-    command: [sh, -c, "ip route add 10.0.1.0/24 via 10.0.3.254 && while true; do curl -v 10.0.1.201 && sleep 5; done"]
+    command: [sh, -c, "apk --no-cache add curl && ip route add 10.0.1.0/24 via 10.0.3.254 && while true; do curl -v 10.0.1.201 && sleep 5; done"]
     cap_add:
       - NET_ADMIN

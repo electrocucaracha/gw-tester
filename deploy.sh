@@ -17,6 +17,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
     docker)
         curl -fsSL http://bit.ly/install_pkg | PKG="docker-compose" bash
         sudo docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
+        sudo docker-compose --file docker/skydive/docker-compose.yml up --detach
         make pull
         make deploy
     ;;

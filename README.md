@@ -58,6 +58,15 @@ check the logs of the different containers.
     $ cd /vagrant
     $ make k8s-logs
 
+### SkyDive
+
+The [Skydive real-time network analyzer][4] is deployed during the
+provisioning process, this [link](http://10.10.17.4:8082) allows to
+access its dashboard.
+
+![Skydive sample](docs/img/skydive.png)
+
 [1]: https://wmnsk.com/posts/20200116_gw-tester/
 [2]: https://www.vagrantup.com/
 [3]: https://github.com/electrocucaracha/bootstrap-vagrant
+[4]: https://skydive.network/

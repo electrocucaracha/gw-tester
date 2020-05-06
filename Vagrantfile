@@ -23,7 +23,7 @@ Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox
 
   config.vm.box = "peru/ubuntu-18.04-server-amd64"
-  config.vm.box_version = "20200424.01"
+  config.vm.box_version = "20200501.01"
   config.vm.synced_folder './', '/vagrant', type: "nfs"
 
   # NOTE: A private network set up is required by NFS. This is due

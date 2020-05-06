@@ -13,20 +13,34 @@ set -o xtrace
 set -o errexit
 set -o nounset
 
+function install_deps {
+    pkgs=""
+    for pkg in "$@"; do
+        if ! command -v "$pkg"; then
+            pkgs+=" $pkg"
+        fi
+    done
+    if [ -n "$pkgs" ]; then
+        curl -fsSL http://bit.ly/install_pkg | PKG=$pkgs bash
+    fi
+}
+
 case ${DEPLOYMENT_TYPE:-docker} in
     docker)
-        curl -fsSL http://bit.ly/install_pkg | PKG="docker-compose" bash
+        install_deps docker-compose
         sudo docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
         sudo docker-compose --file docker/skydive/docker-compose.yml up --detach
         make pull
         make deploy
     ;;
     k8s)
-        curl -fsSL http://bit.ly/install_pkg | PKG="kind kubectl" bash
+        install_deps kind kubectl
+        pushd k8s
         newgrp docker <<EONG
-        kind create cluster --name k8s --config=./k8s/kind-config.yaml
+        kind create cluster --name k8s --config=./kind-config.yml
 EONG
-        kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.12.0/Documentation/kube-flannel.yml
+        kubectl apply -f kube-flannel.yml
+        popd
         pushd "$(mktemp -d)"
         curl -Lo cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz
         tar xvf cni-plugins.tgz

@@ -12,12 +12,27 @@ set -o pipefail
 set -o errexit
 set -o nounset
 
-kubectl apply -f https://raw.githubusercontent.com/intel/multus-cni/v3.4.1/images/multus-daemonset.yml
-for daemonset in $(kubectl get daemonset -n kube-system | grep kube-multus | awk '{print $1}'); do
-    echo "Waiting for $daemonset to successfully rolled out"
-    if ! kubectl rollout status "daemonset/$daemonset" -n kube-system --timeout=5m > /dev/null; then
-        echo "The $daemonset daemonset has not started properly"
-        exit 1
-    fi
+pushd k8s/multus/
+kubectl apply -f multus-daemonset.yml
+./${CNI:-flannel}/deploy.sh
+for daemonset in $(kubectl get daemonset -n kube-system -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
+    kubectl rollout status "daemonset/$daemonset" -n kube-system
 done
-kubectl apply -f k8s/multus/
+for pod in pgw sgw; do
+    kubectl apply -f "${pod}.yml"
+    kubectl wait --for=condition=ready pod "$pod"
+done
+export SGW_S11_IP=$(kubectl logs sgw | grep -oP 'S11 on \K.*?(?=:)')
+export PGW_S5C_IP=$(kubectl logs pgw | grep -oP 'S5-C on \K.*?(?=:)')
+envsubst '${PGW_S5C_IP},${SGW_S11_IP}' < mme.yml | kubectl apply -f -
+kubectl wait --for=condition=ready pod mme
+export MME_S11_ADDR="$(kubectl logs mme | grep -oP 'S1-MME on: \K.*?(?=:)'):36412"
+envsubst '${MME_S11_ADDR}' < enb.yml | kubectl apply -f -
+kubectl wait --for=condition=ready pod enb
+export PGW_SGI_IP=$(kubectl get pod/pgw -o jsonpath='{.metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' | jq '.[] | select(.name=="lte-sgi").ips[0]' | sed -e 's/^"//' -e 's/"$//' )
+envsubst '${PGW_SGI_IP}' < http-server.yml | kubectl apply -f -
+kubectl wait --for=condition=ready pod http-server
+export ENB_EUU_IP=$(kubectl get pod/enb -o jsonpath='{.metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' | jq '.[] | select(.name=="lte-euu").ips[0]' | sed -e 's/^"//' -e 's/"$//' )
+export HTTP_SERVER_SGI_IP=$(kubectl get pod/http-server -o jsonpath='{.metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' | jq '.[] | select(.name=="lte-sgi").ips[0]' | sed -e 's/^"//' -e 's/"$//' )
+envsubst '${ENB_EUU_IP},${HTTP_SERVER_SGI_IP}' < external-client.yml | kubectl apply -f -
+popd

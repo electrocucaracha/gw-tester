@@ -34,12 +34,12 @@ case ${DEPLOYMENT_TYPE:-docker} in
         make deploy
     ;;
     k8s)
-        install_deps kind kubectl
+        install_deps kind kubectl jq
         pushd k8s
         newgrp docker <<EONG
         kind create cluster --name k8s --config=./kind-config.yml
 EONG
-        kubectl apply -f kube-flannel.yml
+        kubectl apply -f mgmt_flannel.yml
         popd
         pushd "$(mktemp -d)"
         curl -Lo cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz

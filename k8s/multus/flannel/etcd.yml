@@ -1,0 +1,51 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flannel-etcd
+  namespace: kube-system
+  labels:
+    app: flannel-etcd
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: flannel-etcd
+  template:
+    metadata:
+      labels:
+        app: flannel-etcd
+    spec:
+      containers:
+      - command:
+        - etcd
+        - --advertise-client-urls=http://10.1.1.1:12379
+        - --listen-client-urls=http://0.0.0.0:12379
+        - --listen-peer-urls=http://localhost:12380
+        - --enable-v2=true
+        image: quay.io/coreos/etcd:v3.3.20
+        name: etcd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flannel-etcd
+  namespace: kube-system
+  labels:
+    app: flannel-etcd
+spec:
+  type: ClusterIP
+  ports:
+    - port: 12379
+      targetPort: 12379
+  selector:
+    app: flannel-etcd

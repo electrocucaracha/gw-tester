@@ -16,7 +16,7 @@ services:
     build:
       context: ../enb
     volumes:
-      - ../enb/enb_default.yml:/etc/enb.yml
+      - ../enb/enb_default.yml:/etc/gw-tester/enb.yml
     networks:
       lte-s1u:
         ipv4_address: 172.21.0.11
@@ -35,7 +35,7 @@ services:
     build:
       context: ../mme
     volumes:
-      - ../mme/mme_default.yml:/etc/mme.yml
+      - ../mme/mme_default.yml:/etc/gw-tester/mme.yml
     networks:
       lte-s11:
         ipv4_address: 172.22.0.12
@@ -46,7 +46,7 @@ services:
     build:
       context: ../sgw
     volumes:
-      - ../sgw/sgw_default.yml:/etc/sgw.yml
+      - ../sgw/sgw_default.yml:/etc/gw-tester/sgw.yml
     networks:
       lte-s11:
         ipv4_address: 172.22.0.13
@@ -63,7 +63,7 @@ services:
     build:
       context: ../pgw
     volumes:
-      - ../pgw/pgw_default.yml:/etc/pgw.yml
+      - ../pgw/pgw_default.yml:/etc/gw-tester/pgw.yml
     networks:
       lte-s5u:
         ipv4_address: 172.25.0.14

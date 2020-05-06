@@ -20,7 +20,7 @@ networks:
         ip_range: 10.0.3.128/24
   lte-sgi:
     driver: overlay
-    internal: true
+    internal: true # This network must be internal
     ipam:
       driver: default
       config:

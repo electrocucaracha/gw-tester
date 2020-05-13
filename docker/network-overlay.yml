@@ -13,6 +13,8 @@ version: '2.4'
 networks:
   lte-euu:
     driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 2
     ipam:
       driver: default
       config:
@@ -20,6 +22,8 @@ networks:
         ip_range: 10.0.3.128/24
   lte-sgi:
     driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 3
     internal: true # This network must be internal
     ipam:
       driver: default
@@ -28,6 +32,8 @@ networks:
         ip_range: 10.0.1.128/24
   lte-s1u:
     driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 4
     internal: true
     ipam:
       driver: default
@@ -36,6 +42,8 @@ networks:
         ip_range: 172.21.0.128/24
   lte-s1c:
     driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 5
     internal: true
     ipam:
       driver: default
@@ -44,6 +52,8 @@ networks:
         ip_range: 172.21.1.128/24
   lte-s11:
     driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 6
     internal: true
     ipam:
       driver: default
@@ -52,6 +62,8 @@ networks:
         ip_range: 172.22.0.128/24
   lte-s5u:
     driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 7
     internal: true
     ipam:
       driver: default
@@ -60,6 +72,8 @@ networks:
         ip_range: 172.25.0.128/24
   lte-s5c:
     driver: overlay
+    driver_opts:
+      com.docker.network.driver.overlay.vxlanid_list: 8
     internal: true
     ipam:
       driver: default

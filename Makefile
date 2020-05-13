@@ -12,13 +12,17 @@ build:
 	sudo docker image prune --force
 pull:
 	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml pull
-docker-logs:
+docker-debug:
 	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml logs --follow
 deploy: undeploy
 	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
 undeploy:
 	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml down --remove-orphans
+docker-logs:
+	for component in pgw sgw mme enb; do \
+		docker logs docker_$${component}_1; \
+	done
 k8s-logs:
-	for component in enb mme pgw sgw ; do \
-		kubectl logs $$component ; \
+	for component in pgw sgw mme enb; do \
+		kubectl logs $${component} ; \
 	done

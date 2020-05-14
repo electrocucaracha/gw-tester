@@ -12,9 +12,9 @@ set -o pipefail
 set -o errexit
 set -o nounset
 
-pushd flannel/
-kubectl apply -f etcd.yml
-kubectl scale deployment flannel-etcd -n kube-system --replicas=1
-kubectl rollout status deployment/flannel-etcd -n kube-system --timeout=5m
-kubectl apply -f ./overlay/
-popd
+for pod in http-server external-client; do
+    kubectl delete -f "${pod}.yml" --wait=false --ignore-not-found=true
+done
+for pod in http-server external-client; do
+    kubectl wait --for=delete "pod/$pod" --timeout=120s || true
+done

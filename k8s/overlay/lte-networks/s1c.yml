@@ -11,22 +11,22 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: lte-s1u-flannel-cfg
+  name: lte-s1c-flannel-cfg
   namespace: kube-system
 data:
   cni-conf.json: |
     {
-      "name": "lte-s1u",
+      "name": "lte-s1c",
       "cniVersion": "0.3.1",
-      "subnetFile": "/run/flannel/lte-s1u.env",
-      "dataDir": "/var/lib/cni/flannel_s1u",
+      "subnetFile": "/run/flannel/lte-s1c.env",
+      "dataDir": "/var/lib/cni/flannel_s1c",
       "delegate": {
-        "bridge": "kbr3"
+        "bridge": "kbr4"
       }
     }
   net-conf.json: |
     {
-      "Network": "172.21.0.0/24",
+      "Network": "172.21.1.0/24",
       "Backend": {
         "Type": "vxlan"
       }
@@ -35,13 +35,15 @@ data:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: etcdctl-lte-s1u
+  name: etcdctl-lte-s1c
   namespace: kube-system
 spec:
   template:
     spec:
+      nodeSelector:
+        flannel-etcd: "true"
       containers:
-      - name: etcdctl-lte-s1u
+      - name: etcdctl-lte-s1c
         image: quay.io/coreos/etcd:v3.3.20
         env:
         - name: ETCDCTL_API
@@ -51,14 +53,14 @@ spec:
         - --no-sync
         - '--endpoint=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
         - set
-        - '/s1u/network/config'
-        - '{ "Network": "172.21.0.0/24", "Backend": {"Type": "vxlan", "VNI": 4}}'
+        - '/s1c/network/config'
+        - '{ "Network": "172.21.1.0/24", "Backend": {"Type": "vxlan", "VNI": 5}}'
       restartPolicy: Never
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: lte-s1u-flannel-ds
+  name: lte-s1c-flannel-ds
   namespace: kube-system
 spec:
   selector:
@@ -95,8 +97,8 @@ spec:
         - /opt/bin/flanneld
         args:
         - --ip-masq
-        - -subnet-file=/run/flannel/lte-s1u.env
-        - -etcd-prefix=/s1u/network
+        - -subnet-file=/run/flannel/lte-s1c.env
+        - -etcd-prefix=/s1c/network
         - '-etcd-endpoints=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
         resources:
           requests:
@@ -128,18 +130,3 @@ spec:
         - name: cni
           hostPath:
             path: /etc/cni/net.d
----
-apiVersion: "k8s.cni.cncf.io/v1"
-kind: NetworkAttachmentDefinition
-metadata:
-  name: lte-s1u
-spec: 
-  config: '{
-      "cniVersion": "0.3.1",
-      "type": "flannel",
-      "subnetFile": "/run/flannel/lte-s1u.env",
-      "dataDir": "/var/lib/cni/flannel_s1u",
-      "delegate": {
-        "bridge": "kbr3"
-      }
-    }'

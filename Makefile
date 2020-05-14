@@ -8,21 +8,37 @@
 ##############################################################################
 
 build:
-	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml build --compress --force-rm
+	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml build --compress --force-rm
 	sudo docker image prune --force
 pull:
-	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml pull
-docker-debug:
-	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml logs --follow
-deploy: undeploy
-	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
-undeploy:
-	sudo docker-compose --file docker/main.yml --file docker/network-overlay.yml --file docker/demo.yml down --remove-orphans
+	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml pull
+
+docker-deploy: docker-undeploy
+	sudo docker-compose --file docker/main.yml --file docker/overlay.yml up --force-recreate --detach --no-build
+docker-undeploy:
+	sudo docker-compose --file docker/main.yml --file docker/overlay.yml down --remove-orphans
+docker-deploy-demo: docker-undeploy-demo
+	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
+docker-undeploy-demo:
+	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml down --remove-orphans
 docker-logs:
 	for component in pgw sgw mme enb; do \
 		docker logs docker_$${component}_1; \
 	done
+docker-debug:
+	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml logs --follow external_client
+
+k8s-deploy:
+	cd ./k8s/"$${MULTI_CNI:-multus}"; ./deploy_main.sh
+k8s-undeploy:
+	cd ./k8s/"$${MULTI_CNI:-multus}"; ./undeploy_main.sh
+k8s-deploy-demo:
+	cd ./k8s/"$${MULTI_CNI:-multus}"; ./deploy_demo.sh
+k8s-undeploy-demo:
+	cd ./k8s/"$${MULTI_CNI:-multus}"; ./undeploy_demo.sh
 k8s-logs:
 	for component in pgw sgw mme enb; do \
 		kubectl logs $${component} ; \
 	done
+k8s-debug:
+	kubectl logs -f external-client

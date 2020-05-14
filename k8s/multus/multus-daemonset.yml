@@ -84,18 +84,33 @@ data:
       "delegates": [
         {
           "cniVersion": "0.3.1",
-          "name": "cni0",
+          "name": "kindnet",
           "plugins": [
             {
-              "type": "flannel",
+              "type": "ptp",
               "name": "mgmt_net",
               "masterplugin": true,
-                "delegate": {
-                  "isDefaultGateway": true,
-                  "bridge": "kbr0",
-                  "hairpinMode": true
-                }
+              "ipMasq": false,
+              "ipam": {
+                "type": "host-local",
+                "dataDir": "/run/cni-ipam-state",
+                "routes": [
+                  {
+                    "dst": "0.0.0.0/0"
+                  }
+                ],
+                "ranges": [
+                  [
+                    {
+                      "subnet": "10.244.0.0/16"
+                    }
+                  ]
+                ]
               },
+              "dns": {
+                "nameservers": [ "8.8.8.8" ]
+              }
+            },
               {
                 "type": "portmap",
                 "capabilities": {

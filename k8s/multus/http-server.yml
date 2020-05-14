@@ -42,5 +42,6 @@ metadata:
   name: http-server-init-script
 data:
   init.sh: |
+    set -o xtrace
     ip route add 10.0.3.0/24 via ${PGW_SGI_IP}
     python -m http.server 80

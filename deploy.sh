@@ -9,50 +9,18 @@
 ##############################################################################
 
 set -o pipefail
-set -o xtrace
 set -o errexit
 set -o nounset
 
-function install_deps {
-    pkgs=""
-    for pkg in "$@"; do
-        if ! command -v "$pkg"; then
-            pkgs+=" $pkg"
-        fi
-    done
-    if [ -n "$pkgs" ]; then
-        curl -fsSL http://bit.ly/install_pkg | PKG=$pkgs bash
-    fi
-}
-
+echo "Running deployment process..."
 case ${DEPLOYMENT_TYPE:-docker} in
     docker)
-        install_deps docker-compose
-        docker network create --subnet 10.244.0.0/16 --opt com.docker.network.bridge.name=docker_gwbridge docker_gwbridge
-        sudo docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
-        if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
-            sudo docker-compose --file docker/skydive/docker-compose.yml up --detach
-        fi
-        make pull
-        make deploy
+        make docker-deploy-demo
+        make docker-logs
     ;;
     k8s)
-        install_deps kind kubectl jq
-        pushd k8s
-        newgrp docker <<EONG
-        kind create cluster --name k8s --config=./kind-config.yml
-EONG
-        kubectl apply -f mgmt_flannel.yml
-        popd
-        pushd "$(mktemp -d)"
-        curl -Lo cni-plugins.tgz https://github.com/containernetworking/plugins/releases/download/v0.8.5/cni-plugins-linux-amd64-v0.8.5.tgz
-        tar xvf cni-plugins.tgz
-        for id in $(sudo docker ps -q --filter "ancestor=$(sudo docker images --filter=reference='kindest/node*' -q)"); do
-            for plugin in flannel bridge macvlan; do
-                sudo docker cp $plugin "$id:/opt/cni/bin/$plugin"
-            done
-        done
-        popd
-        ./k8s/"${MULTI_CNI:-multus}"/deploy.sh
+        make k8s-deploy
+        make k8s-logs
+        make k8s-deploy-demo
     ;;
 esac

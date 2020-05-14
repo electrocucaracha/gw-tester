@@ -34,7 +34,6 @@ networks:
     driver: overlay
     driver_opts:
       com.docker.network.driver.overlay.vxlanid_list: 4
-    internal: true
     ipam:
       driver: default
       config:
@@ -44,7 +43,6 @@ networks:
     driver: overlay
     driver_opts:
       com.docker.network.driver.overlay.vxlanid_list: 5
-    internal: true
     ipam:
       driver: default
       config:
@@ -54,7 +52,6 @@ networks:
     driver: overlay
     driver_opts:
       com.docker.network.driver.overlay.vxlanid_list: 6
-    internal: true
     ipam:
       driver: default
       config:
@@ -64,7 +61,6 @@ networks:
     driver: overlay
     driver_opts:
       com.docker.network.driver.overlay.vxlanid_list: 7
-    internal: true
     ipam:
       driver: default
       config:
@@ -74,7 +70,6 @@ networks:
     driver: overlay
     driver_opts:
       com.docker.network.driver.overlay.vxlanid_list: 8
-    internal: true
     ipam:
       driver: default
       config:

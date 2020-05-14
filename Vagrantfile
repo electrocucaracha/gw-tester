@@ -33,7 +33,7 @@ Vagrant.configure(2) do |config|
   [:virtualbox, :libvirt].each do |provider|
   config.vm.provider provider do |p|
       p.cpus = 2
-      p.memory = 2048
+      p.memory = 4096
     end
   end
 
@@ -79,7 +79,11 @@ Vagrant.configure(2) do |config|
       'HOST_IP': "10.10.17.4"
     }
     sh.inline = <<-SHELL
+      set -o pipefail
+      set -o errexit
+
       cd /vagrant
+      ./install.sh | tee ~/install.log
       ./deploy.sh | tee ~/deploy.log
     SHELL
   end

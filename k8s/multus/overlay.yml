@@ -1,0 +1,114 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-euu
+spec: 
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-euu.env",
+      "dataDir": "/var/lib/cni/flannel_euu",
+      "delegate": {
+        "bridge": "kbr1"
+      }
+    }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-sgi
+spec: 
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-sgi.env",
+      "dataDir": "/var/lib/cni/flannel_sgi",
+      "delegate": {
+        "bridge": "kbr2"
+      }
+    }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-s1u
+spec: 
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-s1u.env",
+      "dataDir": "/var/lib/cni/flannel_s1u",
+      "delegate": {
+        "bridge": "kbr3"
+      }
+    }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-s1c
+spec: 
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-s1c.env",
+      "dataDir": "/var/lib/cni/flannel_s1c",
+      "delegate": {
+        "bridge": "kbr4"
+      }
+    }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-s11
+spec: 
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-s11.env",
+      "dataDir": "/var/lib/cni/flannel_s11",
+      "delegate": {
+        "bridge": "kbr5"
+      }
+    }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-s5u
+spec: 
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-s5u.env",
+      "dataDir": "/var/lib/cni/flannel_s5u",
+      "delegate": {
+        "bridge": "kbr6"
+      }
+    }'
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-s5c
+spec: 
+  config: '{
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-s5c.env",
+      "dataDir": "/var/lib/cni/flannel_s5c",
+      "delegate": {
+        "bridge": "kbr7"
+      }
+    }'

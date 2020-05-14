@@ -1,19 +1,20 @@
----
+#!/bin/bash
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
-# Copyright (c) 2020
+# Copyright (c)
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-kind: Cluster
-apiVersion: kind.x-k8s.io/v1alpha4
-nodes:
-- role: control-plane
-  image: kindest/node:v1.18.2
-- role: worker
-  image: kindest/node:v1.18.2
-- role: worker
-  image: kindest/node:v1.18.2
+set -o pipefail
+set -o errexit
+set -o nounset
+set -o xtrace
+
+# Deploy Multus CNI daemonset and CRD
+kubectl apply -f multus-daemonset.yml
+
+# Create NetworkAttachmentDefinition resources
+kubectl apply -f overlay.yml

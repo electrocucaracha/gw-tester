@@ -42,6 +42,7 @@ metadata:
   name: external-client-init-script
 data:
   init.sh: |
+    set -o xtrace
     ip route add 10.0.1.0/24 via ${ENB_EUU_IP}
     while true; do
         curl --connect-timeout 5 ${HTTP_SERVER_SGI_IP}

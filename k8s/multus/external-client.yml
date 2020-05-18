@@ -16,6 +16,8 @@ metadata:
     k8s.v1.cni.cncf.io/networks: '[
       { "name": "lte-euu" }
     ]'
+  labels:
+    network: e-utran
 spec:
   restartPolicy: OnFailure
 #  initContainers:

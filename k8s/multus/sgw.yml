@@ -19,6 +19,8 @@ metadata:
       { "name": "lte-s5u", "interface": "net3"},
       { "name": "lte-s5c", "interface": "net4"}
     ]'
+  labels:
+    network: epc
 spec:
   restartPolicy: OnFailure
   initContainers:

@@ -18,6 +18,16 @@ metadata:
     ]'
 spec:
   restartPolicy: OnFailure
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: network
+            operator: In
+            values:
+            - pdn
+        topologyKey: "kubernetes.io/hostname"
   initContainers:
   - name: configure
     image: busybox

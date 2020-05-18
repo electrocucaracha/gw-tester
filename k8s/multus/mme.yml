@@ -17,6 +17,8 @@ metadata:
       { "name": "lte-s11", "interface": "net1" },
       { "name": "lte-s1c", "interface": "net2" }
     ]'
+  labels:
+    network: epc
 spec:
   restartPolicy: OnFailure
   initContainers:

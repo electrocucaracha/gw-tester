@@ -18,6 +18,8 @@ metadata:
       { "name": "lte-s5c", "interface": "net2"},
       { "name": "lte-sgi", "interface": "net3"}
     ]'
+  labels:
+    network: pdn
 spec:
   restartPolicy: OnFailure
   initContainers:

@@ -20,7 +20,7 @@ kubectl apply -f etcd.yml
 kubectl scale deployment flannel-etcd -n kube-system --replicas=1
 kubectl rollout status deployment/flannel-etcd -n kube-system --timeout=5m
 flannel_etdc_pod=$(kubectl get pods -n kube-system -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}' | grep flannel-etcd )
-until kubectl logs $flannel_etdc_pod -n kube-system | grep "ready to serve client requests"; do
+until kubectl logs "$flannel_etdc_pod" -n kube-system | grep "ready to serve client requests"; do
     sleep 2
 done
 

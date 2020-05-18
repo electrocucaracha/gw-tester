@@ -39,13 +39,9 @@ case ${DEPLOYMENT_TYPE:-docker} in
         make pull
     ;;
     k8s)
-        install_deps kind kubectl jq
+        install_deps kind kubectl jq helm
 
-        # Deploy Kubernetes Cluster
-        newgrp docker <<EONG
-        kind create cluster --name k8s --config=./k8s/kind-config.yml
-EONG
-        # Deploy CNI plugins
+        # Download CNI plugins
         if [ ! -d /tmp/cni_plugins ]; then
             pushd "$(mktemp -d)"
             curl -Lo cni-plugins.tgz "https://github.com/containernetworking/plugins/releases/download/${cni_plugin_version}/cni-plugins-linux-amd64-${cni_plugin_version}.tgz"
@@ -53,12 +49,19 @@ EONG
             tar xvf cni-plugins.tgz -C /tmp/cni_plugins
             popd
         fi
-        kind_img="$(grep image /vagrant/k8s/kind-config.yml | uniq | awk -F 'image: ' '{print $2}')"
-        for id in $(sudo docker ps -q --filter "ancestor=$(sudo docker images --filter=reference=$kind_img -q)"); do
-            for plugin in flannel bridge; do
-                sudo docker cp "/tmp/cni_plugins/$plugin" "$id:/opt/cni/bin/$plugin"
+
+        # Deploy Kubernetes Cluster
+        if ! sudo kind get clusters | grep -e k8s; then
+            newgrp docker <<EONG
+            kind create cluster --name k8s --config=./k8s/kind-config.yml
+EONG
+            kind_img="$(grep image /vagrant/k8s/kind-config.yml | uniq | awk -F 'image: ' '{print $2}')"
+            for id in $(sudo docker ps -q --filter "ancestor=$(sudo docker images --filter=reference="$kind_img" -q)"); do
+                for plugin in flannel bridge; do
+                    sudo docker cp "/tmp/cni_plugins/$plugin" "$id:/opt/cni/bin/$plugin"
+                done
             done
-        done
+        fi
         for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
             kubectl wait --for=condition=ready "node/$node"
         done

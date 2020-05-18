@@ -11,6 +11,9 @@
 set -o pipefail
 set -o errexit
 set -o nounset
+set -o xtrace
+
+./undeploy_demo.sh
 
 # Deploy Http server
 PGW_SGI_IP=$(kubectl get pod/pgw -o jsonpath='{.metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' | jq '.[] | select(.name=="lte-sgi").ips[0]' | sed -e 's/^"//' -e 's/"$//' )

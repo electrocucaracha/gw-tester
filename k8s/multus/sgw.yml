@@ -21,12 +21,17 @@ metadata:
     ]'
 spec:
   restartPolicy: OnFailure
-  containers:
-  - image: electrocucaracha/sgw
-    name: sgw
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN"]
+  initContainers:
+  - name: install
+    image: busybox
+    command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
+    volumeMounts:
+      - name: config
+        mountPath: /etc/gw-tester/
+      - name: workdir
+        mountPath: /work-dir
+  - name: configure
+    image: busybox
     command:
       - "sh"
     args:
@@ -34,10 +39,27 @@ spec:
     volumeMounts:
       - name: init-script
         mountPath: /opt/gw-tester/script
+      - name: workdir
+        mountPath: /etc/gw-tester
+  containers:
+  - image: electrocucaracha/sgw
+    name: sgw
+    securityContext:
+      capabilities:
+        add: ["NET_ADMIN"]
+    command: ["/opt/gw-tester/bin/sgw", "-config", "/etc/gw-tester/sgw.yml"]
+    volumeMounts:
+      - name: workdir
+        mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
         name: sgw-init-script
+    - name: workdir
+      emptyDir: {}
+    - name: config
+      configMap:
+        name: sgw-config
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -55,4 +77,16 @@ data:
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/sgw.yml
 
-    /opt/gw-tester/bin/sgw -config /etc/gw-tester/sgw.yml
+    cat /etc/gw-tester/sgw.yml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sgw-config
+data:
+  sgw.yml: |
+    local_addresses:
+      s11_ip: "172.22.0.13"
+      s1u_ip: "172.21.0.13"
+      s5c_ip: "172.25.1.13"
+      s5u_ip: "172.25.0.13"

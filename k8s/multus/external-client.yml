@@ -18,16 +18,26 @@ metadata:
     ]'
 spec:
   restartPolicy: OnFailure
+#  initContainers:
+#  - name: configure
+#    image: busybox
+#    securityContext:
+#      capabilities:
+#        add: ["NET_ADMIN"]
+#    command: ["ip", "route", "add", "10.0.1.0/24", "via", "$(enb_euu_ip)"]
+#    env:
+#    - name: enb_euu_ip
+#      value: $ENB_EUU_IP
   containers:
   - image: electrocucaracha/curl:7.67.0-alpine3.11
     name: external-client
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN"]
     command:
       - "sh"
     args:
       - "/opt/external-client/script/init.sh"
+    env:
+    - name: http_server_sgi_ip
+      value: $HTTP_SERVER_SGI_IP
     volumeMounts:
       - name: init-script
         mountPath: /opt/external-client/script
@@ -42,9 +52,7 @@ metadata:
   name: external-client-init-script
 data:
   init.sh: |
-    set -o xtrace
-    ip route add 10.0.1.0/24 via ${ENB_EUU_IP}
     while true; do
-        curl --connect-timeout 5 ${HTTP_SERVER_SGI_IP}
+        curl --connect-timeout 5 ${http_server_sgi_ip}
         sleep 30
     done

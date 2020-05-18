@@ -19,9 +19,22 @@ metadata:
     ]'
 spec:
   restartPolicy: OnFailure
-  containers:
-  - image: electrocucaracha/mme
-    name: mme
+  initContainers:
+  - name: install
+    image: busybox
+    command: ["cp", "/etc/gw-tester/mme.yml", "/work-dir/mme.yml"]
+    volumeMounts:
+      - name: config
+        mountPath: /etc/gw-tester/
+      - name: workdir
+        mountPath: /work-dir
+  - name: configure
+    image: busybox
+    env:
+    - name: sgw_s11_ip
+      value: $SGW_S11_IP
+    - name: pgw_s5c_ip
+      value: $PGW_S5C_IP
     command:
       - "sh"
     args:
@@ -29,10 +42,24 @@ spec:
     volumeMounts:
       - name: init-script
         mountPath: /opt/gw-tester/script
+      - name: workdir
+        mountPath: /etc/gw-tester
+  containers:
+  - image: electrocucaracha/mme
+    name: mme
+    command: ["/opt/gw-tester/bin/mme", "-config", "/etc/gw-tester/mme.yml"]
+    volumeMounts:
+      - name: workdir
+        mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
         name: mme-init-script
+    - name: workdir
+      emptyDir: {}
+    - name: config
+      configMap:
+        name: mme-config
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -46,7 +73,22 @@ data:
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
     sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
 
-    sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$SGW_S11_IP\"|g" /etc/gw-tester/mme.yml
-    sed -i "s|pgw_s5c_ip:.*|pgw_s5c_ip: \"$PGW_S5C_IP\"|g" /etc/gw-tester/mme.yml
+    sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$sgw_s11_ip\"|g" /etc/gw-tester/mme.yml
+    sed -i "s|pgw_s5c_ip:.*|pgw_s5c_ip: \"$pgw_s5c_ip\"|g" /etc/gw-tester/mme.yml
 
-    /opt/gw-tester/bin/mme -config /etc/gw-tester/mme.yml
+    cat /etc/gw-tester/mme.yml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mme-config
+data:
+  mme.yml: |
+    mcc: "001"
+    mnc: "01"
+    apn: "gw-tester.go-gtp.example"
+    local_addresses:
+      s1c_addr: "172.21.1.12:36412"
+      s11_ip: "172.22.0.12"
+    sgw_s11_ip: "172.22.0.13"
+    pgw_s5c_ip: "172.25.1.14"

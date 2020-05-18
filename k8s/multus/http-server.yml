@@ -18,30 +18,17 @@ metadata:
     ]'
 spec:
   restartPolicy: OnFailure
-  containers:
-  - image: python:3.8.2-alpine3.11
-    name: http-server
+  initContainers:
+  - name: configure
+    image: busybox
     securityContext:
       capabilities:
         add: ["NET_ADMIN"]
-    command:
-      - "sh"
-    args:
-      - "/opt/http-server/script/init.sh"
-    volumeMounts:
-      - name: init-script
-        mountPath: /opt/http-server/script
-  volumes:
-    - name: init-script
-      configMap:
-        name: http-server-init-script
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: http-server-init-script
-data:
-  init.sh: |
-    set -o xtrace
-    ip route add 10.0.3.0/24 via ${PGW_SGI_IP}
-    python -m http.server 80
+    command: ["ip", "route", "add", "10.0.3.0/24", "via", "$(pgw_sgi_ip)"]
+    env:
+    - name: pgw_sgi_ip
+      value: $PGW_SGI_IP
+  containers:
+  - image: python:3.8.2-alpine3.11
+    name: http-server
+    command: ["python", "-m", "http.server", "80"]

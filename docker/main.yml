@@ -12,7 +12,7 @@ version: '2.4'
 
 services:
   enb:
-    image: electrocucaracha/enb
+    image: electrocucaracha/enb:0.7.5
     build:
       context: ../enb
     volumes:
@@ -31,7 +31,7 @@ services:
     cap_add:
       - NET_ADMIN
   mme:
-    image: electrocucaracha/mme
+    image: electrocucaracha/mme:0.7.5
     build:
       context: ../mme
     volumes:
@@ -42,7 +42,7 @@ services:
       lte-s1c:
         ipv4_address: 172.21.1.12
   sgw:
-    image: electrocucaracha/sgw
+    image: electrocucaracha/sgw:0.7.5
     build:
       context: ../sgw
     volumes:
@@ -59,7 +59,7 @@ services:
     cap_add:
       - NET_ADMIN
   pgw:
-    image: electrocucaracha/pgw
+    image: electrocucaracha/pgw:0.7.5
     build:
       context: ../pgw
     volumes:

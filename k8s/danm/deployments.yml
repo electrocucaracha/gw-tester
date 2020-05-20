@@ -30,18 +30,18 @@ spec:
           ]
     spec:
       containers:
-      - image: electrocucaracha/enb
-        name: enb
-        securityContext:
-          capabilities:
-            add: ["NET_ADMIN"]
-        command:
-          - "sh"
-        args:
-          - "/opt/enb/init.sh"
-        volumeMounts:
-          - name: init-script
-            mountPath: /opt/enb
+        - image: electrocucaracha/enb
+          name: enb
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - "sh"
+          args:
+            - "/opt/enb/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/enb
       volumes:
         - name: init-script
           configMap:
@@ -82,15 +82,15 @@ spec:
           ]
     spec:
       containers:
-      - image: electrocucaracha/mme
-        name: mme
-        command:
-          - "sh"
-        args:
-          - "/opt/mme/init.sh"
-        volumeMounts:
-          - name: init-script
-            mountPath: /opt/mme
+        - image: electrocucaracha/mme
+          name: mme
+          command:
+            - "sh"
+          args:
+            - "/opt/mme/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/mme
       volumes:
         - name: init-script
           configMap:
@@ -133,18 +133,18 @@ spec:
           ]
     spec:
       containers:
-      - image: electrocucaracha/sgw
-        name: sgw
-        securityContext:
-          capabilities:
-            add: ["NET_ADMIN"]
-        command:
-          - "sh"
-        args:
-          - "/opt/sgw/init.sh"
-        volumeMounts:
-          - name: init-script
-            mountPath: /opt/sgw
+        - image: electrocucaracha/sgw
+          name: sgw
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - "sh"
+          args:
+            - "/opt/sgw/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/sgw
       volumes:
         - name: init-script
           configMap:
@@ -190,18 +190,18 @@ spec:
           ]
     spec:
       containers:
-      - image: electrocucaracha/pgw
-        name: pgw
-        securityContext:
-          capabilities:
-            add: ["NET_ADMIN"]
-        command:
-          - "sh"
-        args:
-          - "/opt/pgw/init.sh"
-        volumeMounts:
-          - name: init-script
-            mountPath: /opt/pgw
+        - image: electrocucaracha/pgw
+          name: pgw
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          command:
+            - "sh"
+          args:
+            - "/opt/pgw/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/pgw
       volumes:
         - name: init-script
           configMap:

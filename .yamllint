@@ -8,16 +8,10 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-matrix:
-  include:
-    - language: python
-      install:
-        - pip install tox
-      script:
-        - tox
-      env:
-        - TOXENV=lint
+extends: default
 
-    - language: shell
-      script:
-        - bash -c 'shopt -s globstar; shellcheck -x **/*.sh'
+ignore: |
+  deployment.yaml
+
+rules:
+  line-length: disable

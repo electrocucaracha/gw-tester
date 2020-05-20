@@ -23,38 +23,38 @@ metadata:
 spec:
   restartPolicy: OnFailure
   initContainers:
-  - name: install
-    image: busybox
-    command: ["cp", "/etc/gw-tester/enb.yml", "/work-dir/enb.yml"]
-    volumeMounts:
-      - name: config
-        mountPath: /etc/gw-tester/
-      - name: workdir
-        mountPath: /work-dir
-  - name: configure
-    image: busybox
-    env:
-    - name: mme_s11_addr
-      value: $MME_S11_ADDR
-    command:
-      - "sh"
-    args:
-      - "/opt/gw-tester/script/init.sh"
-    volumeMounts:
-      - name: init-script
-        mountPath: /opt/gw-tester/script
-      - name: workdir
-        mountPath: /etc/gw-tester
+    - name: install
+      image: busybox
+      command: ["cp", "/etc/gw-tester/enb.yml", "/work-dir/enb.yml"]
+      volumeMounts:
+        - name: config
+          mountPath: /etc/gw-tester/
+        - name: workdir
+          mountPath: /work-dir
+    - name: configure
+      image: busybox
+      env:
+        - name: mme_s11_addr
+          value: $MME_S11_ADDR
+      command:
+        - "sh"
+      args:
+        - "/opt/gw-tester/script/init.sh"
+      volumeMounts:
+        - name: init-script
+          mountPath: /opt/gw-tester/script
+        - name: workdir
+          mountPath: /etc/gw-tester
   containers:
-  - image: electrocucaracha/enb
-    name: enb
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN"]
-    command: ["/opt/gw-tester/bin/enb", "-config", "/etc/gw-tester/enb.yml"]
-    volumeMounts:
-      - name: workdir
-        mountPath: /etc/gw-tester
+    - image: electrocucaracha/enb
+      name: enb
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
+      command: ["/opt/gw-tester/bin/enb", "-config", "/etc/gw-tester/enb.yml"]
+      volumeMounts:
+        - name: workdir
+          mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:

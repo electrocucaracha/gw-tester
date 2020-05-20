@@ -13,7 +13,6 @@ kind: ClusterNetwork
 metadata:
   name: lte-euu
 spec:
-spec:
   NetworkID: euu
   NetworkType: macvlan
   Options:
@@ -23,7 +22,6 @@ apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
 metadata:
   name: lte-sgi
-spec:
 spec:
   NetworkID: sgi
   NetworkType: macvlan
@@ -35,7 +33,6 @@ kind: ClusterNetwork
 metadata:
   name: lte-s1u
 spec:
-spec:
   NetworkID: s1u
   NetworkType: macvlan
   Options:
@@ -45,7 +42,6 @@ apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
 metadata:
   name: lte-s1c
-spec:
 spec:
   NetworkID: s1c
   NetworkType: macvlan
@@ -57,7 +53,6 @@ kind: ClusterNetwork
 metadata:
   name: lte-s11
 spec:
-spec:
   NetworkID: s11
   NetworkType: macvlan
   Options:
@@ -68,7 +63,6 @@ kind: ClusterNetwork
 metadata:
   name: lte-s5u
 spec:
-spec:
   NetworkID: s5u
   NetworkType: macvlan
   Options:
@@ -78,7 +72,6 @@ apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
 metadata:
   name: lte-s5c
-spec:
 spec:
   NetworkID: s5c
   NetworkType: macvlan

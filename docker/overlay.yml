@@ -18,18 +18,18 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 10.0.3.0/24
-        ip_range: 10.0.3.128/24
+        - subnet: 10.0.3.0/24
+          ip_range: 10.0.3.128/24
   lte-sgi:
     driver: overlay
     driver_opts:
       com.docker.network.driver.overlay.vxlanid_list: 3
-    internal: true # This network must be internal
+    internal: true
     ipam:
       driver: default
       config:
-      - subnet: 10.0.1.0/24
-        ip_range: 10.0.1.128/24
+        - subnet: 10.0.1.0/24
+          ip_range: 10.0.1.128/24
   lte-s1u:
     driver: overlay
     driver_opts:
@@ -37,8 +37,8 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.21.0.0/24
-        ip_range: 172.21.0.128/24
+        - subnet: 172.21.0.0/24
+          ip_range: 172.21.0.128/24
   lte-s1c:
     driver: overlay
     driver_opts:
@@ -46,8 +46,8 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.21.1.0/24
-        ip_range: 172.21.1.128/24
+        - subnet: 172.21.1.0/24
+          ip_range: 172.21.1.128/24
   lte-s11:
     driver: overlay
     driver_opts:
@@ -55,8 +55,8 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.22.0.0/24
-        ip_range: 172.22.0.128/24
+        - subnet: 172.22.0.0/24
+          ip_range: 172.22.0.128/24
   lte-s5u:
     driver: overlay
     driver_opts:
@@ -64,8 +64,8 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.25.0.0/24
-        ip_range: 172.25.0.128/24
+        - subnet: 172.25.0.0/24
+          ip_range: 172.25.0.128/24
   lte-s5c:
     driver: overlay
     driver_opts:
@@ -73,5 +73,5 @@ networks:
     ipam:
       driver: default
       config:
-      - subnet: 172.25.1.0/24
-        ip_range: 172.25.1.128/24
+        - subnet: 172.25.1.0/24
+          ip_range: 172.25.1.128/24

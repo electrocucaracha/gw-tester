@@ -24,35 +24,35 @@ metadata:
 spec:
   restartPolicy: OnFailure
   initContainers:
-  - name: install
-    image: busybox
-    command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
-    volumeMounts:
-      - name: config
-        mountPath: /etc/gw-tester/
-      - name: workdir
-        mountPath: /work-dir
-  - name: configure
-    image: busybox
-    command:
-      - "sh"
-    args:
-      - "/opt/gw-tester/script/init.sh"
-    volumeMounts:
-      - name: init-script
-        mountPath: /opt/gw-tester/script
-      - name: workdir
-        mountPath: /etc/gw-tester
+    - name: install
+      image: busybox
+      command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
+      volumeMounts:
+        - name: config
+          mountPath: /etc/gw-tester/
+        - name: workdir
+          mountPath: /work-dir
+    - name: configure
+      image: busybox
+      command:
+        - "sh"
+      args:
+        - "/opt/gw-tester/script/init.sh"
+      volumeMounts:
+        - name: init-script
+          mountPath: /opt/gw-tester/script
+        - name: workdir
+          mountPath: /etc/gw-tester
   containers:
-  - image: electrocucaracha/sgw
-    name: sgw
-    securityContext:
-      capabilities:
-        add: ["NET_ADMIN"]
-    command: ["/opt/gw-tester/bin/sgw", "-config", "/etc/gw-tester/sgw.yml"]
-    volumeMounts:
-      - name: workdir
-        mountPath: /etc/gw-tester
+    - image: electrocucaracha/sgw
+      name: sgw
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
+      command: ["/opt/gw-tester/bin/sgw", "-config", "/etc/gw-tester/sgw.yml"]
+      volumeMounts:
+        - name: workdir
+          mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:

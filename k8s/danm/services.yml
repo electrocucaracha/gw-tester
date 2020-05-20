@@ -18,9 +18,9 @@ metadata:
 spec:
   clusterIP: None
   ports:
-  - name: s1c
-    port: 36412
-    protocol: TCP
+    - name: s1c
+      port: 36412
+      protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -32,9 +32,9 @@ metadata:
 spec:
   clusterIP: None
   ports:
-  - name: s11
-    port: 2123
-    protocol: TCP
+    - name: s11
+      port: 2123
+      protocol: TCP
 ---
 apiVersion: v1
 kind: Service
@@ -46,6 +46,6 @@ metadata:
 spec:
   clusterIP: None
   ports:
-  - name: s5c
-    port: 2152
-    protocol: TCP
+    - name: s5c
+      port: 2152
+      protocol: TCP

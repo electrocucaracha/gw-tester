@@ -12,7 +12,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-euu
-spec: 
+spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "flannel",
@@ -27,7 +27,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-sgi
-spec: 
+spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "flannel",
@@ -42,7 +42,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s1u
-spec: 
+spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "flannel",
@@ -57,7 +57,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s1c
-spec: 
+spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "flannel",
@@ -72,7 +72,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s11
-spec: 
+spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "flannel",
@@ -87,7 +87,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s5u
-spec: 
+spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "flannel",
@@ -102,7 +102,7 @@ apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s5c
-spec: 
+spec:
   config: '{
       "cniVersion": "0.3.1",
       "type": "flannel",

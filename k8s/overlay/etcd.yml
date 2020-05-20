@@ -28,14 +28,14 @@ spec:
       nodeSelector:
         flannel-etcd: "true"
       containers:
-      - command:
-        - etcd
-        - --advertise-client-urls=http://10.1.1.1:12379
-        - --listen-client-urls=http://0.0.0.0:12379
-        - --listen-peer-urls=http://localhost:12380
-        - --enable-v2=true
-        image: quay.io/coreos/etcd:v3.3.20
-        name: etcd
+        - command:
+            - etcd
+            - --advertise-client-urls=http://10.1.1.1:12379
+            - --listen-client-urls=http://0.0.0.0:12379
+            - --listen-peer-urls=http://localhost:12380
+            - --enable-v2=true
+          image: quay.io/coreos/etcd:v3.3.20
+          name: etcd
 ---
 apiVersion: v1
 kind: Service

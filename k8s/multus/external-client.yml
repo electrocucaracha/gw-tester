@@ -20,29 +20,29 @@ metadata:
     network: e-utran
 spec:
   restartPolicy: OnFailure
-#  initContainers:
-#  - name: configure
-#    image: busybox
-#    securityContext:
-#      capabilities:
-#        add: ["NET_ADMIN"]
-#    command: ["ip", "route", "add", "10.0.1.0/24", "via", "$(enb_euu_ip)"]
-#    env:
-#    - name: enb_euu_ip
-#      value: $ENB_EUU_IP
+# initContainers:
+#   - name: configure
+#     image: busybox
+#     securityContext:
+#       capabilities:
+#         add: ["NET_ADMIN"]
+#     command: ["ip", "route", "add", "10.0.1.0/24", "via", "$(enb_euu_ip)"]
+#     env:
+#       - name: enb_euu_ip
+#         value: $ENB_EUU_IP
   containers:
-  - image: electrocucaracha/curl:7.67.0-alpine3.11
-    name: external-client
-    command:
-      - "sh"
-    args:
-      - "/opt/external-client/script/init.sh"
-    env:
-    - name: http_server_sgi_ip
-      value: $HTTP_SERVER_SGI_IP
-    volumeMounts:
-      - name: init-script
-        mountPath: /opt/external-client/script
+    - image: electrocucaracha/curl:7.67.0-alpine3.11
+      name: external-client
+      command:
+        - "sh"
+      args:
+        - "/opt/external-client/script/init.sh"
+      env:
+        - name: http_server_sgi_ip
+          value: $HTTP_SERVER_SGI_IP
+      volumeMounts:
+        - name: init-script
+          mountPath: /opt/external-client/script
   volumes:
     - name: init-script
       configMap:

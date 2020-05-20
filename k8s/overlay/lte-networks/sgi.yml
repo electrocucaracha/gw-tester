@@ -43,18 +43,18 @@ spec:
       nodeSelector:
         flannel-etcd: "true"
       containers:
-      - name: etcdctl-lte-sgi
-        image: quay.io/coreos/etcd:v3.3.20
-        env:
-        - name: ETCDCTL_API
-          value: "2"
-        command: ["etcdctl"]
-        args:
-        - --no-sync
-        - '--endpoint=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
-        - set
-        - '/sgi/network/config'
-        - '{ "Network": "10.0.1.0/24", "Backend": {"Type": "vxlan", "VNI": 3}}'
+        - name: etcdctl-lte-sgi
+          image: quay.io/coreos/etcd:v3.3.20
+          env:
+            - name: ETCDCTL_API
+              value: "2"
+          command: ["etcdctl"]
+          args:
+            - --no-sync
+            - '--endpoint=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
+            - set
+            - '/sgi/network/config'
+            - '{ "Network": "10.0.1.0/24", "Backend": {"Type": "vxlan", "VNI": 3}}'
       restartPolicy: Never
 ---
 apiVersion: apps/v1
@@ -87,42 +87,42 @@ spec:
                       - amd64
       hostNetwork: true
       tolerations:
-      - operator: Exists
-        effect: NoSchedule
+        - operator: Exists
+          effect: NoSchedule
       serviceAccountName: flannel
       containers:
-      - name: kube-flannel
-        image: quay.io/coreos/flannel:v0.12.0-amd64
-        command:
-        - /opt/bin/flanneld
-        args:
-        - --ip-masq
-        - -subnet-file=/run/flannel/lte-sgi.env
-        - -etcd-prefix=/sgi/network
-        - '-etcd-endpoints=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "50Mi"
-          limits:
-            cpu: "100m"
-            memory: "50Mi"
-        securityContext:
-          privileged: false
-          capabilities:
-            add: ["NET_ADMIN"]
-        env:
-        - name: POD_NAME
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.name
-        - name: POD_NAMESPACE
-          valueFrom:
-            fieldRef:
-              fieldPath: metadata.namespace
-        volumeMounts:
-        - name: run
-          mountPath: /run/flannel
+        - name: kube-flannel
+          image: quay.io/coreos/flannel:v0.12.0-amd64
+          command:
+            - /opt/bin/flanneld
+          args:
+            - --ip-masq
+            - -subnet-file=/run/flannel/lte-sgi.env
+            - -etcd-prefix=/sgi/network
+            - '-etcd-endpoints=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "50Mi"
+            limits:
+              cpu: "100m"
+              memory: "50Mi"
+          securityContext:
+            privileged: false
+            capabilities:
+              add: ["NET_ADMIN"]
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          volumeMounts:
+            - name: run
+              mountPath: /run/flannel
       volumes:
         - name: run
           hostPath:

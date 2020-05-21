@@ -18,9 +18,9 @@ metadata:
       { "name": "lte-s1c", "interface": "net2" }
     ]'
   labels:
+    app.kubernetes.io/name: mme
     network: epc
 spec:
-  restartPolicy: OnFailure
   initContainers:
     - name: install
       image: busybox
@@ -47,7 +47,7 @@ spec:
         - name: workdir
           mountPath: /etc/gw-tester
   containers:
-    - image: electrocucaracha/mme
+    - image: electrocucaracha/mme:0.7.5
       name: mme
       command: ["/opt/gw-tester/bin/mme", "-config", "/etc/gw-tester/mme.yml"]
       volumeMounts:

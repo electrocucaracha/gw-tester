@@ -17,7 +17,6 @@ metadata:
       { "name": "lte-sgi" }
     ]'
 spec:
-  restartPolicy: OnFailure
   affinity:
     podAffinity:
       requiredDuringSchedulingIgnoredDuringExecution:
@@ -27,7 +26,7 @@ spec:
                 operator: In
                 values:
                   - pdn
-      topologyKey: "kubernetes.io/hostname"
+          topologyKey: "kubernetes.io/hostname"
   initContainers:
     - name: configure
       image: busybox

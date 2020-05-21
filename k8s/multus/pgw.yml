@@ -19,9 +19,9 @@ metadata:
       { "name": "lte-sgi", "interface": "net3"}
     ]'
   labels:
+    app.kubernetes.io/name: pgw
     network: pdn
 spec:
-  restartPolicy: OnFailure
   initContainers:
     - name: install
       image: busybox
@@ -43,7 +43,7 @@ spec:
         - name: workdir
           mountPath: /etc/gw-tester
   containers:
-    - image: electrocucaracha/pgw
+    - image: electrocucaracha/pgw:0.7.5
       name: pgw
       securityContext:
         capabilities:

@@ -1,0 +1,101 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "pgw.fullname" . }}
+  labels:
+    {{- include "pgw.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "pgw.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+          { "name": "{{ .Values.s5u.name }}", "interface": "{{ .Values.s5u.interface }}" },
+          { "name": "{{ .Values.s5c.name }}", "interface": "{{ .Values.s5c.interface }}" },
+          { "name": "{{ .Values.sgi.name }}", "interface": "{{ .Values.sgi.interface }}" }
+        ]'
+      labels:
+        network: pdn
+        {{- include "pgw.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: install
+          image: busybox
+          command: ["cp", "/etc/gw-tester/pgw.yml", "/work-dir/pgw.yml"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/gw-tester/
+            - name: workdir
+              mountPath: /work-dir
+        - name: configure
+          image: busybox
+          command:
+            - "sh"
+          args:
+            - "/opt/gw-tester/script/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/gw-tester/script
+            - name: workdir
+              mountPath: /etc/gw-tester
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/opt/gw-tester/bin/pgw", "-config", "/etc/gw-tester/pgw.yml"]
+          volumeMounts:
+            - name: workdir
+              mountPath: /etc/gw-tester
+      volumes:
+        - name: init-script
+          configMap:
+            name: pgw-init-script
+        - name: workdir
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: pgw-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgw-init-script
+data:
+  init.sh: |
+    s5u_ip=$(ifconfig {{ .Values.s5u.interface }} | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig {{ .Values.s5c.interface }} | awk '/inet addr/{print substr($2,6)}')
+
+    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
+    sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/pgw.yml
+
+    cat /etc/gw-tester/pgw.yml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgw-config
+data:
+  pgw.yml: |
+    local_addresses:
+      s5c_ip: "172.25.1.14"
+      s5u_ip: "172.25.0.14"
+    sgi_if_name: "{{ .Values.sgi.interface }}"
+    route_subnet: "{{ .Values.sgi.subnet }}"

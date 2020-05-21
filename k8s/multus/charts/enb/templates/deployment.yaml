@@ -1,0 +1,121 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "enb.fullname" . }}
+  labels:
+    {{- include "enb.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "enb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        k8s.v1.cni.cncf.io/networks: '[
+          { "name": "{{ .Values.euu.name }}", "interface": "{{ .Values.euu.interface }}" },
+          { "name": "{{ .Values.s1c.name }}", "interface": "{{ .Values.s1c.interface }}" },
+          { "name": "{{ .Values.s1u.name }}", "interface": "{{ .Values.s1u.interface }}" }
+        ]'
+      labels:
+        network: e-utran
+        {{- include "enb.selectorLabels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: install
+          image: busybox
+          command: ["cp", "/etc/gw-tester/enb.yml", "/work-dir/enb.yml"]
+          volumeMounts:
+            - name: config
+              mountPath: /etc/gw-tester/
+            - name: workdir
+              mountPath: /work-dir
+        - name: configure
+          image: busybox
+          env:
+            - name: mme_s11_addr
+              value: {{ .Values.mme.s1c.ip }}:{{ .Values.mme.s1c.port }}
+          command:
+            - "sh"
+          args:
+            - "/opt/gw-tester/script/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/gw-tester/script
+            - name: workdir
+              mountPath: /etc/gw-tester
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command: ["/opt/gw-tester/bin/enb", "-config", "/etc/gw-tester/enb.yml"]
+          volumeMounts:
+            - name: workdir
+              mountPath: /etc/gw-tester
+      volumes:
+        - name: init-script
+          configMap:
+            name: enb-init-script
+        - name: workdir
+          emptyDir: {}
+        - name: config
+          configMap:
+            name: enb-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: enb-init-script
+data:
+  init.sh: |
+    s1c_ip=$(ifconfig {{ .Values.s1c.interface }} | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig {{ .Values.s1u.interface }} | awk '/inet addr/{print substr($2,6)}')
+
+    sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
+    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
+    sed -i "s|euu_if_name:.*|euu_if_name: \"{{ .Values.euu.interface }}\"|g" /etc/gw-tester/enb.yml
+    sed -i "s|mme_addr:.*|mme_addr: \"${mme_s11_addr}\"|g" /etc/gw-tester/enb.yml
+
+    cat /etc/gw-tester/enb.yml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: enb-config
+data:
+  enb.yml: |
+    mcc: "001"
+    mnc: "01"
+    rat_type: 6 # E-UTRAN
+    tai: 0x0001
+    eci: 0x00000001
+    local_addresses:
+      s1c_ip: "172.21.1.11"
+      s1u_ip: "172.21.0.11"
+    mme_addr: "172.21.1.12:36412"
+    prom_addr:
+    subscribers:
+      - imsi: "001010000000001"
+        msisdn: "814000000001"
+        imeisv: "1234500000001"
+        src_ip: "10.0.3.201"
+        i_tei: 0
+        type: "external"
+        euu_if_name: "eth0"
+        http_url: ""
+        reattach_on_reload: false

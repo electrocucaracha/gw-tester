@@ -20,9 +20,9 @@ metadata:
       { "name": "lte-s5c", "interface": "net4"}
     ]'
   labels:
+    app.kubernetes.io/name: sgw
     network: epc
 spec:
-  restartPolicy: OnFailure
   initContainers:
     - name: install
       image: busybox
@@ -44,7 +44,7 @@ spec:
         - name: workdir
           mountPath: /etc/gw-tester
   containers:
-    - image: electrocucaracha/sgw
+    - image: electrocucaracha/sgw:0.7.5
       name: sgw
       securityContext:
         capabilities:

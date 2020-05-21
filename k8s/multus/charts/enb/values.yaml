@@ -1,21 +1,36 @@
-#!/bin/bash
+---
 # SPDX-license-identifier: Apache-2.0
 ##############################################################################
-# Copyright (c)
+# Copyright (c) 2020
 # All rights reserved. This program and the accompanying materials
 # are made available under the terms of the Apache License, Version 2.0
 # which accompanies this distribution, and is available at
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-set -o pipefail
-set -o errexit
-set -o nounset
-set -o xtrace
+euu:
+  name: lte-euu
+  interface: net1
+s1c:
+  name: lte-s1c
+  interface: net2
+s1u:
+  name: lte-s1u
+  interface: net3
 
-for pod in http-server external-client; do
-    kubectl delete -f "${pod}.yml" --wait=false --ignore-not-found=true
-done
-for pod in http-server external-client; do
-    kubectl wait --for=delete "pod/$pod" --timeout=120s || true
-done
+mme:
+  s1c:
+    ip: 172.21.1.12
+    port: 36412
+
+replicaCount: 1
+
+image:
+  repository: electrocucaracha/enb
+  pullPolicy: IfNotPresent
+  tag: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100

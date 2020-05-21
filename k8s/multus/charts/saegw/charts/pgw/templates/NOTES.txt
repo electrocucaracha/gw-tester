@@ -1,0 +1,5 @@
+1. Get the IP addresses by running these commands:
+
+kubectl get pods -l=app.kubernetes.io/instance=pgw -o jsonpath='{.items[*].metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' | jq '.[] | select(.name=="{{ .Values.s5u.name }}").ips[0]'
+kubectl get pods -l=app.kubernetes.io/instance=pgw -o jsonpath='{.items[*].metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' | jq '.[] | select(.name=="{{ .Values.s5c.name }}").ips[0]'
+kubectl get pods -l=app.kubernetes.io/instance=pgw -o jsonpath='{.items[*].metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' | jq '.[] | select(.name=="{{ .Values.sgi.name }}").ips[0]'

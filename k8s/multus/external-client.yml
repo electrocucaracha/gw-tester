@@ -17,6 +17,7 @@ metadata:
       { "name": "lte-euu" }
     ]'
   labels:
+    app.kubernetes.io/name: external-client
     network: e-utran
 spec:
   restartPolicy: OnFailure

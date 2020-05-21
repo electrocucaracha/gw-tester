@@ -19,9 +19,9 @@ metadata:
       { "name": "lte-s1u", "interface": "net3" }
     ]'
   labels:
+    app.kubernetes.io/name: enb
     network: e-utran
 spec:
-  restartPolicy: OnFailure
   initContainers:
     - name: install
       image: busybox
@@ -35,7 +35,7 @@ spec:
       image: busybox
       env:
         - name: mme_s11_addr
-          value: $MME_S11_ADDR
+          value: ${MME_S1C_IP}:36412
       command:
         - "sh"
       args:
@@ -46,7 +46,7 @@ spec:
         - name: workdir
           mountPath: /etc/gw-tester
   containers:
-    - image: electrocucaracha/enb
+    - image: electrocucaracha/enb:0.7.5
       name: enb
       securityContext:
         capabilities:

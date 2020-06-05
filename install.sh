@@ -32,7 +32,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
     docker)
         install_deps docker-compose
         sudo docker network create --subnet 10.244.0.0/16 --opt com.docker.network.bridge.name=docker_gwbridge docker_gwbridge
-        sudo docker swarm init --advertise-addr "${HOST_IP:-10.10.17.4}"
+        sudo docker swarm init --advertise-addr "${HOST_IP:-10.0.2.15}"
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
             sudo docker-compose --file docker/skydive/docker-compose.yml up --detach
         fi

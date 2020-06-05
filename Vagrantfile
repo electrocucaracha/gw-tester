@@ -23,12 +23,8 @@ Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox
 
   config.vm.box = "generic/ubuntu1804"
-  config.vm.box_version = "3.0.2"
-  config.vm.synced_folder './', '/vagrant', type: "nfs"
-
-  # NOTE: A private network set up is required by NFS. This is due
-  # to a limitation of VirtualBox's built-in networking.
-  config.vm.network "private_network", ip: "10.10.17.4"
+  config.vm.box_version = "3.0.6"
+  config.vm.synced_folder './', '/vagrant'
 
   [:virtualbox, :libvirt].each do |provider|
   config.vm.provider provider do |p|

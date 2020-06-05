@@ -14,7 +14,7 @@ set -o nounset
 set -o xtrace
 
 # Deploy Multus CNI daemonset and CRD
-kubectl apply -f multus-daemonset.yml
+kubectl apply -f install
 
 # Create NetworkAttachmentDefinition resources
 kubectl apply -f overlay.yml

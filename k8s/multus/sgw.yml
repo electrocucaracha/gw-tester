@@ -13,19 +13,20 @@ kind: Pod
 metadata:
   name: sgw
   annotations:
-    k8s.v1.cni.cncf.io/networks: '[
-      { "name": "lte-s11", "interface": "net1"},
-      { "name": "lte-s1u", "interface": "net2"},
-      { "name": "lte-s5u", "interface": "net3"},
-      { "name": "lte-s5c", "interface": "net4"}
-    ]'
+    k8s.v1.cni.cncf.io/networks: |
+      [
+        {"name": "lte-s11", "interface": "net1"},
+        {"name": "lte-s1u", "interface": "net2"},
+        {"name": "lte-s5u", "interface": "net3"},
+        {"name": "lte-s5c", "interface": "net4"}
+      ]
   labels:
     app.kubernetes.io/name: sgw
     network: epc
 spec:
   initContainers:
     - name: install
-      image: busybox
+      image: electrocucaracha/sgw:0.7.5
       command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
       volumeMounts:
         - name: config
@@ -33,7 +34,7 @@ spec:
         - name: workdir
           mountPath: /work-dir
     - name: configure
-      image: busybox
+      image: electrocucaracha/sgw:0.7.5
       command:
         - "sh"
       args:
@@ -69,6 +70,9 @@ metadata:
   name: sgw-init-script
 data:
   init.sh: |
+    ip a
+    ip route
+
     s11_ip=$(ifconfig net1 | awk '/inet addr/{print substr($2,6)}')
     s1u_ip=$(ifconfig net2 | awk '/inet addr/{print substr($2,6)}')
     s5u_ip=$(ifconfig net3 | awk '/inet addr/{print substr($2,6)}')

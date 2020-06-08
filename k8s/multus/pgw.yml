@@ -13,18 +13,19 @@ kind: Pod
 metadata:
   name: pgw
   annotations:
-    k8s.v1.cni.cncf.io/networks: '[
-      { "name": "lte-s5u", "interface": "net1"},
-      { "name": "lte-s5c", "interface": "net2"},
-      { "name": "lte-sgi", "interface": "net3"}
-    ]'
+    k8s.v1.cni.cncf.io/networks: |
+      [
+        {"name": "lte-s5u", "interface": "net1"},
+        {"name": "lte-s5c", "interface": "net2"},
+        {"name": "lte-sgi", "interface": "net3"}
+      ]
   labels:
     app.kubernetes.io/name: pgw
     network: pdn
 spec:
   initContainers:
     - name: install
-      image: busybox
+      image: electrocucaracha/pgw:0.7.5
       command: ["cp", "/etc/gw-tester/pgw.yml", "/work-dir/pgw.yml"]
       volumeMounts:
         - name: config
@@ -32,7 +33,7 @@ spec:
         - name: workdir
           mountPath: /work-dir
     - name: configure
-      image: busybox
+      image: electrocucaracha/pgw:0.7.5
       command:
         - "sh"
       args:
@@ -68,6 +69,9 @@ metadata:
   name: pgw-init-script
 data:
   init.sh: |
+    ip a
+    ip route
+
     s5u_ip=$(ifconfig net1 | awk '/inet addr/{print substr($2,6)}')
     s5c_ip=$(ifconfig net2 | awk '/inet addr/{print substr($2,6)}')
 

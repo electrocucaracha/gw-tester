@@ -24,18 +24,29 @@ spec:
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[
-          { "name": "{{ .Values.euu.name }}", "interface": "{{ .Values.euu.interface }}" },
-          { "name": "{{ .Values.s1c.name }}", "interface": "{{ .Values.s1c.interface }}" },
-          { "name": "{{ .Values.s1u.name }}", "interface": "{{ .Values.s1u.interface }}" }
-        ]'
+        k8s.v1.cni.cncf.io/networks: |
+          [
+            { "name": "{{ .Values.euu.name }}", "interface": "{{ .Values.euu.interface }}" },
+            { "name": "{{ .Values.s1c.name }}", "interface": "{{ .Values.s1c.interface }}" },
+            { "name": "{{ .Values.s1u.name }}", "interface": "{{ .Values.s1u.interface }}" }
+          ]
       labels:
         network: e-utran
         {{- include "enb.selectorLabels" . | nindent 8 }}
     spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: network
+                    operator: In
+                    values:
+                      - pdn
+              topologyKey: "kubernetes.io/hostname"
       initContainers:
         - name: install
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: ["cp", "/etc/gw-tester/enb.yml", "/work-dir/enb.yml"]
           volumeMounts:
             - name: config
@@ -43,7 +54,7 @@ spec:
             - name: workdir
               mountPath: /work-dir
         - name: configure
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           env:
             - name: mme_s11_addr
               value: {{ .Values.mme.s1c.ip }}:{{ .Values.mme.s1c.port }}
@@ -82,14 +93,33 @@ kind: ConfigMap
 metadata:
   name: enb-init-script
 data:
-  init.sh: |
+  init.sh: |2
+    ip a
+    ip route
+
+    euu_ip=$(ifconfig {{ .Values.s1c.interface }} | awk '/inet addr/{print substr($2,6)}')
     s1c_ip=$(ifconfig {{ .Values.s1c.interface }} | awk '/inet addr/{print substr($2,6)}')
     s1u_ip=$(ifconfig {{ .Values.s1u.interface }} | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
-    sed -i "s|euu_if_name:.*|euu_if_name: \"{{ .Values.euu.interface }}\"|g" /etc/gw-tester/enb.yml
     sed -i "s|mme_addr:.*|mme_addr: \"${mme_s11_addr}\"|g" /etc/gw-tester/enb.yml
+    for i in $(seq 2 254); do
+        if [ "10.0.3.$i" != "$euu_ip" ]; then
+            format_num=$(printf "%03i" $i)
+            cat <<EOL >> /etc/gw-tester/enb.yml
+      - imsi: "00101000000000$format_num"
+        msisdn: "81400000000$format_num"
+        imeisv: "123450000000$format_num"
+        src_ip: "10.0.3.$i"
+        i_tei: 0
+        type: "external"
+        euu_if_name: "{{ .Values.euu.interface }}"
+        http_url: ""
+        reattach_on_reload: false
+    EOL
+        fi
+    done
 
     cat /etc/gw-tester/enb.yml
 ---
@@ -110,12 +140,3 @@ data:
     mme_addr: "172.21.1.12:36412"
     prom_addr:
     subscribers:
-      - imsi: "001010000000001"
-        msisdn: "814000000001"
-        imeisv: "1234500000001"
-        src_ip: "10.0.3.201"
-        i_tei: 0
-        type: "external"
-        euu_if_name: "eth0"
-        http_url: ""
-        reattach_on_reload: false

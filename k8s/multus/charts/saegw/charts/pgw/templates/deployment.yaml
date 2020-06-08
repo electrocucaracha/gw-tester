@@ -24,18 +24,19 @@ spec:
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[
-          { "name": "{{ .Values.s5u.name }}", "interface": "{{ .Values.s5u.interface }}" },
-          { "name": "{{ .Values.s5c.name }}", "interface": "{{ .Values.s5c.interface }}" },
-          { "name": "{{ .Values.sgi.name }}", "interface": "{{ .Values.sgi.interface }}" }
-        ]'
+        k8s.v1.cni.cncf.io/networks: |
+          [
+            { "name": "{{ .Values.s5u.name }}", "interface": "{{ .Values.s5u.interface }}" },
+            { "name": "{{ .Values.s5c.name }}", "interface": "{{ .Values.s5c.interface }}" },
+            { "name": "{{ .Values.sgi.name }}", "interface": "{{ .Values.sgi.interface }}" }
+          ]
       labels:
         network: pdn
         {{- include "pgw.selectorLabels" . | nindent 8 }}
     spec:
       initContainers:
         - name: install
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: ["cp", "/etc/gw-tester/pgw.yml", "/work-dir/pgw.yml"]
           volumeMounts:
             - name: config
@@ -43,7 +44,7 @@ spec:
             - name: workdir
               mountPath: /work-dir
         - name: configure
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command:
             - "sh"
           args:
@@ -80,6 +81,9 @@ metadata:
   name: pgw-init-script
 data:
   init.sh: |
+    ip a
+    ip route
+
     s5u_ip=$(ifconfig {{ .Values.s5u.interface }} | awk '/inet addr/{print substr($2,6)}')
     s5c_ip=$(ifconfig {{ .Values.s5c.interface }} | awk '/inet addr/{print substr($2,6)}')
 

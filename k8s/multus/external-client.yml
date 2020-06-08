@@ -13,24 +13,31 @@ kind: Pod
 metadata:
   name: external-client
   annotations:
-    k8s.v1.cni.cncf.io/networks: '[
-      { "name": "lte-euu" }
-    ]'
-  labels:
-    app.kubernetes.io/name: external-client
-    network: e-utran
+    k8s.v1.cni.cncf.io/networks: |
+      [
+        {"name": "lte-euu"}
+      ]
 spec:
-  restartPolicy: OnFailure
-# initContainers:
-#   - name: configure
-#     image: busybox
-#     securityContext:
-#       capabilities:
-#         add: ["NET_ADMIN"]
-#     command: ["ip", "route", "add", "10.0.1.0/24", "via", "$(enb_euu_ip)"]
-#     env:
-#       - name: enb_euu_ip
-#         value: $ENB_EUU_IP
+  affinity:
+    podAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+              - key: network
+                operator: In
+                values:
+                  - e-utran
+          topologyKey: "kubernetes.io/hostname"
+  initContainers:
+    - name: configure
+      image: electrocucaracha/curl:7.67.0-alpine3.11
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
+      command: ["ip", "route", "add", "10.0.1.0/24", "via", "$(enb_euu_ip)"]
+      env:
+        - name: enb_euu_ip
+          value: $ENB_EUU_IP
   containers:
     - image: electrocucaracha/curl:7.67.0-alpine3.11
       name: external-client
@@ -55,6 +62,7 @@ metadata:
   name: external-client-init-script
 data:
   init.sh: |
+    set -o xtrace
     while true; do
         curl --connect-timeout 5 ${http_server_sgi_ip}
         sleep 30

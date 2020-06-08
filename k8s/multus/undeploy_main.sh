@@ -13,6 +13,8 @@ set -o errexit
 set -o nounset
 set -o xtrace
 
+./undeploy_demo.sh
+
 if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
     for chart in saegw mme enb; do
         if helm ls | grep "$chart"; then

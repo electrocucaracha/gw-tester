@@ -46,7 +46,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
             pushd "$(mktemp -d)"
             curl -Lo cni-plugins.tgz "https://github.com/containernetworking/plugins/releases/download/${cni_plugin_version}/cni-plugins-linux-amd64-${cni_plugin_version}.tgz"
             sudo mkdir -p /opt/containernetworking/plugins
-            sudo chown $USER -R /opt/containernetworking/plugins
+            sudo chown "$USER" -R /opt/containernetworking/plugins
             tar xvf cni-plugins.tgz -C /opt/containernetworking/plugins
             popd
         fi
@@ -59,7 +59,7 @@ EONG
             kubectl apply -f ./k8s/overlay/mgmt_net.yml
         fi
         for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
-            kubectl wait --for=condition=ready "node/$node"
+            kubectl wait --for=condition=ready "node/$node" --timeout=120s
         done
 
         # Create Multiple Networks

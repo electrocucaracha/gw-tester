@@ -24,19 +24,20 @@ spec:
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[
-          { "name": "{{ .Values.s11.name }}", "interface": "{{ .Values.s11.interface }}" },
-          { "name": "{{ .Values.s1u.name }}", "interface": "{{ .Values.s1u.interface }}" },
-          { "name": "{{ .Values.s5u.name }}", "interface": "{{ .Values.s5u.interface }}" },
-          { "name": "{{ .Values.s5c.name }}", "interface": "{{ .Values.s5c.interface }}" }
-        ]'
+        k8s.v1.cni.cncf.io/networks: |
+          [
+            { "name": "{{ .Values.s11.name }}", "interface": "{{ .Values.s11.interface }}" },
+            { "name": "{{ .Values.s1u.name }}", "interface": "{{ .Values.s1u.interface }}" },
+            { "name": "{{ .Values.s5u.name }}", "interface": "{{ .Values.s5u.interface }}" },
+            { "name": "{{ .Values.s5c.name }}", "interface": "{{ .Values.s5c.interface }}" }
+          ]
       labels:
         network: epc
         {{- include "sgw.selectorLabels" . | nindent 8 }}
     spec:
       initContainers:
         - name: install
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
           volumeMounts:
             - name: config
@@ -44,7 +45,7 @@ spec:
             - name: workdir
               mountPath: /work-dir
         - name: configure
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command:
             - "sh"
           args:
@@ -81,6 +82,9 @@ metadata:
   name: sgw-init-script
 data:
   init.sh: |
+    ip a
+    ip route
+
     s11_ip=$(ifconfig {{ .Values.s11.interface }} | awk '/inet addr/{print substr($2,6)}')
     s1u_ip=$(ifconfig {{ .Values.s1u.interface }} | awk '/inet addr/{print substr($2,6)}')
     s5u_ip=$(ifconfig {{ .Values.s5u.interface }} | awk '/inet addr/{print substr($2,6)}')

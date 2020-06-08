@@ -24,17 +24,18 @@ spec:
   template:
     metadata:
       annotations:
-        k8s.v1.cni.cncf.io/networks: '[
-          { "name": "{{ .Values.s11.name }}", "interface": "{{ .Values.s11.interface }}" },
-          { "name": "{{ .Values.s1c.name }}", "interface": "{{ .Values.s1c.interface }}" }
-        ]'
+        k8s.v1.cni.cncf.io/networks: |
+          [
+            { "name": "{{ .Values.s11.name }}", "interface": "{{ .Values.s11.interface }}" },
+            { "name": "{{ .Values.s1c.name }}", "interface": "{{ .Values.s1c.interface }}" }
+          ]
       labels:
         network: epc
         {{- include "mme.selectorLabels" . | nindent 8 }}
     spec:
       initContainers:
         - name: install
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: ["cp", "/etc/gw-tester/mme.yml", "/work-dir/mme.yml"]
           volumeMounts:
             - name: config
@@ -42,7 +43,7 @@ spec:
             - name: workdir
               mountPath: /work-dir
         - name: configure
-          image: busybox
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           env:
             - name: sgw_s11_ip
               value: {{ .Values.sgw.s11.ip }}
@@ -81,6 +82,9 @@ metadata:
   name: mme-init-script
 data:
   init.sh: |
+    ip a
+    ip route
+
     s11_ip=$(ifconfig {{ .Values.s11.interface }} | awk '/inet addr/{print substr($2,6)}')
     s1c_ip=$(ifconfig {{ .Values.s1c.interface }} | awk '/inet addr/{print substr($2,6)}')
 

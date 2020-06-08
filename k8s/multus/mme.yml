@@ -13,17 +13,18 @@ kind: Pod
 metadata:
   name: mme
   annotations:
-    k8s.v1.cni.cncf.io/networks: '[
-      { "name": "lte-s11", "interface": "net1" },
-      { "name": "lte-s1c", "interface": "net2" }
-    ]'
+    k8s.v1.cni.cncf.io/networks: |
+      [
+        {"name": "lte-s11", "interface": "net1"},
+        {"name": "lte-s1c", "interface": "net2"}
+      ]
   labels:
     app.kubernetes.io/name: mme
     network: epc
 spec:
   initContainers:
     - name: install
-      image: busybox
+      image: electrocucaracha/mme:0.7.5
       command: ["cp", "/etc/gw-tester/mme.yml", "/work-dir/mme.yml"]
       volumeMounts:
         - name: config
@@ -31,7 +32,7 @@ spec:
         - name: workdir
           mountPath: /work-dir
     - name: configure
-      image: busybox
+      image: electrocucaracha/mme:0.7.5
       env:
         - name: sgw_s11_ip
           value: $SGW_S11_IP
@@ -69,6 +70,9 @@ metadata:
   name: mme-init-script
 data:
   init.sh: |
+    ip a
+    ip route
+
     s11_ip=$(ifconfig net1 | awk '/inet addr/{print substr($2,6)}')
     s1c_ip=$(ifconfig net2 | awk '/inet addr/{print substr($2,6)}')
 

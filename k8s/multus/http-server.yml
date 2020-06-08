@@ -13,9 +13,10 @@ kind: Pod
 metadata:
   name: http-server
   annotations:
-    k8s.v1.cni.cncf.io/networks: '[
-      { "name": "lte-sgi" }
-    ]'
+    k8s.v1.cni.cncf.io/networks: |
+      [
+        {"name": "lte-sgi"}
+      ]
 spec:
   affinity:
     podAffinity:
@@ -29,7 +30,7 @@ spec:
           topologyKey: "kubernetes.io/hostname"
   initContainers:
     - name: configure
-      image: busybox
+      image: python:3.8.2-alpine3.11
       securityContext:
         capabilities:
           add: ["NET_ADMIN"]

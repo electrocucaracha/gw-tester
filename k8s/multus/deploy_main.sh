@@ -24,7 +24,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
 else
     for pod in pgw sgw; do
         kubectl apply -f "${pod}.yml"
-        kubectl wait --for=condition=ready pod "$pod"
+        kubectl wait --for=condition=ready pod "$pod" --timeout=120s
     done
 fi
 
@@ -42,7 +42,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
 else
     export SGW_S11_IP PGW_S5C_IP
     envsubst \$PGW_S5C_IP,\$SGW_S11_IP < mme.yml | kubectl apply -f -
-    kubectl wait --for=condition=ready pod mme
+    kubectl wait --for=condition=ready pod mme --timeout=120s
 fi
 
 # Deploy eNB service
@@ -55,5 +55,5 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
 else
     export MME_S1C_IP
     envsubst \$MME_S1C_IP < enb.yml | kubectl apply -f -
-    kubectl wait --for=condition=ready pod enb
+    kubectl wait --for=condition=ready pod enb --timeout=120s
 fi

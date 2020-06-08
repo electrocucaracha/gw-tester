@@ -13,7 +13,9 @@ kind: NetworkAttachmentDefinition
 metadata:
   name: lte-euu
 spec:
-  config: '{
+  config: |
+    {
+      "name": "lte-euu",
       "cniVersion": "0.3.1",
       "type": "flannel",
       "subnetFile": "/run/flannel/lte-euu.env",
@@ -21,14 +23,16 @@ spec:
       "delegate": {
         "bridge": "kbr1"
       }
-    }'
+    }
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-sgi
 spec:
-  config: '{
+  config: |
+    {
+      "name": "lte-sgi",
       "cniVersion": "0.3.1",
       "type": "flannel",
       "subnetFile": "/run/flannel/lte-sgi.env",
@@ -36,14 +40,16 @@ spec:
       "delegate": {
         "bridge": "kbr2"
       }
-    }'
+    }
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s1u
 spec:
-  config: '{
+  config: |
+    {
+      "name": "lte-s1u",
       "cniVersion": "0.3.1",
       "type": "flannel",
       "subnetFile": "/run/flannel/lte-s1u.env",
@@ -51,14 +57,16 @@ spec:
       "delegate": {
         "bridge": "kbr3"
       }
-    }'
+    }
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s1c
 spec:
-  config: '{
+  config: |
+    {
+      "name": "lte-s1c",
       "cniVersion": "0.3.1",
       "type": "flannel",
       "subnetFile": "/run/flannel/lte-s1c.env",
@@ -66,14 +74,16 @@ spec:
       "delegate": {
         "bridge": "kbr4"
       }
-    }'
+    }
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s11
 spec:
-  config: '{
+  config: |
+    {
+      "name": "lte-s11",
       "cniVersion": "0.3.1",
       "type": "flannel",
       "subnetFile": "/run/flannel/lte-s11.env",
@@ -81,14 +91,16 @@ spec:
       "delegate": {
         "bridge": "kbr5"
       }
-    }'
+    }
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s5u
 spec:
-  config: '{
+  config: |
+    {
+      "name": "lte-s5u",
       "cniVersion": "0.3.1",
       "type": "flannel",
       "subnetFile": "/run/flannel/lte-s5u.env",
@@ -96,14 +108,16 @@ spec:
       "delegate": {
         "bridge": "kbr6"
       }
-    }'
+    }
 ---
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
   name: lte-s5c
 spec:
-  config: '{
+  config: |
+    {
+      "name": "lte-s5c",
       "cniVersion": "0.3.1",
       "type": "flannel",
       "subnetFile": "/run/flannel/lte-s5c.env",
@@ -111,4 +125,4 @@ spec:
       "delegate": {
         "bridge": "kbr7"
       }
-    }'
+    }

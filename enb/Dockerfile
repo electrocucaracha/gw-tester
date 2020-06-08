@@ -5,6 +5,7 @@ RUN go get -v github.com/wmnsk/go-gtp/examples/gw-tester/enb
 
 FROM alpine:3.11
 
+RUN apk --no-cache add coreutils
 ENV APP_ROOT=/opt/gw-tester
 COPY --from=builder /go/bin/enb ${APP_ROOT}/bin/
 COPY ./enb_default.yml /etc/gw-tester/enb.yml

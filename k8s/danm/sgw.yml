@@ -1,0 +1,99 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: sgw
+  annotations:
+    danm.k8s.io/interfaces: |
+      [
+        {"clusterNetwork":"default"},
+        {"clusterNetwork":"lte-s11"},
+        {"clusterNetwork":"lte-s1u"},
+        {"clusterNetwork":"lte-s5u"},
+        {"clusterNetwork":"lte-s5c"}
+      ]
+  labels:
+    app.kubernetes.io/name: sgw
+    network: epc
+spec:
+  initContainers:
+    - name: install
+      image: electrocucaracha/sgw:0.7.5
+      command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
+      volumeMounts:
+        - name: config
+          mountPath: /etc/gw-tester/
+        - name: workdir
+          mountPath: /work-dir
+    - name: configure
+      image: electrocucaracha/sgw:0.7.5
+      command:
+        - "sh"
+      args:
+        - "/opt/gw-tester/script/init.sh"
+      volumeMounts:
+        - name: init-script
+          mountPath: /opt/gw-tester/script
+        - name: workdir
+          mountPath: /etc/gw-tester
+  containers:
+    - image: electrocucaracha/sgw:0.7.5
+      name: sgw
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
+      command: ["/opt/gw-tester/bin/sgw", "-config", "/etc/gw-tester/sgw.yml"]
+      volumeMounts:
+        - name: workdir
+          mountPath: /etc/gw-tester
+  volumes:
+    - name: init-script
+      configMap:
+        name: sgw-init-script
+    - name: workdir
+      emptyDir: {}
+    - name: config
+      configMap:
+        name: sgw-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sgw-init-script
+data:
+  init.sh: |
+    ip a
+    ip route
+
+    s11_ip=$(ifconfig $(ip route get 172.22.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig $(ip route get 172.21.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    s5u_ip=$(ifconfig $(ip route get 172.25.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig $(ip route get 172.25.1.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+
+    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
+    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml
+    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
+    sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    cat /etc/gw-tester/sgw.yml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sgw-config
+data:
+  sgw.yml: |
+    local_addresses:
+      s11_ip: "172.22.0.13"
+      s1u_ip: "172.21.0.13"
+      s5c_ip: "172.25.1.13"
+      s5u_ip: "172.25.0.13"

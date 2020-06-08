@@ -1,0 +1,399 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: danmeps.danm.k8s.io
+spec:
+  group: danm.k8s.io
+  scope: Namespaced
+  version: v1
+  names:
+    plural: danmeps
+    singular: danmep
+    kind: DanmEp
+    shortNames:
+      - de
+      - dep
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tenantconfigs.danm.k8s.io
+spec:
+  group: danm.k8s.io
+  scope: Cluster
+  version: v1
+  names:
+    kind: TenantConfig
+    plural: tenantconfigs
+    singular: tenantconfig
+    shortNames:
+      - tc
+      - tconf
+    categories:
+      - all
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: danmnets.danm.k8s.io
+spec:
+  group: danm.k8s.io
+  scope: Namespaced
+  version: v1
+  names:
+    kind: DanmNet
+    plural: danmnets
+    singular: danmnet
+    shortNames:
+      - dn
+      - dnet
+    categories:
+      - all
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            NetworkID:
+              type: string
+            NetworkType:
+              type: string
+            Options:
+              properties:
+                cidr:
+                  oneOf:
+                    - type: string
+                      maxLength: 0
+                    - type: string
+                      format: cidr
+                      pattern: '^\d+\.'
+                allocation_pool:
+                  properties:
+                    start:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv4
+                    end:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv4
+                    lastIp:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: '^\d+\.'
+                container_prefix:
+                  type: string
+                host_device:
+                  type: string
+                device_pool:
+                  type: string
+                vxlan:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 16777214
+                vlan:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 4094
+                rt_tables:
+                  type: integer
+                  format: int32
+                  minimum: 0
+                  maximum: 255
+                net6:
+                  oneOf:
+                    - type: string
+                      maxLength: 0
+                    - type: string
+                      format: cidr
+                      pattern: ':'
+                allocation_pool_v6:
+                  properties:
+                    start:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv6
+                    end:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv6
+                    lastIp:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: ':'
+                    cidr:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: ':'
+                routes:
+                  type: object
+                routes6:
+                  type: object
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: clusternetworks.danm.k8s.io
+spec:
+  group: danm.k8s.io
+  scope: Cluster
+  version: v1
+  names:
+    plural: clusternetworks
+    singular: clusternetwork
+    kind: ClusterNetwork
+    shortNames:
+      - cn
+      - cnet
+    categories:
+      - all
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            NetworkID:
+              type: string
+            NetworkType:
+              type: string
+            AllowedTenants:
+              type: array
+              items:
+                type: string
+            Options:
+              properties:
+                cidr:
+                  oneOf:
+                    - type: string
+                      maxLength: 0
+                    - type: string
+                      format: cidr
+                      pattern: '^\d+\.'
+                allocation_pool:
+                  properties:
+                    start:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv4
+                    end:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv4
+                    lastIp:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: '^\d+\.'
+                container_prefix:
+                  type: string
+                host_device:
+                  type: string
+                device_pool:
+                  type: string
+                vxlan:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 16777214
+                vlan:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 4094
+                rt_tables:
+                  type: integer
+                  format: int32
+                  minimum: 0
+                  maximum: 255
+                net6:
+                  oneOf:
+                    - type: string
+                      maxLength: 0
+                    - type: string
+                      format: cidr
+                      pattern: ':'
+                allocation_pool_v6:
+                  properties:
+                    start:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv6
+                    end:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv6
+                    lastIp:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: ':'
+                    cidr:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: ':'
+                routes:
+                  type: object
+                routes6:
+                  type: object
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tenantnetworks.danm.k8s.io
+spec:
+  group: danm.k8s.io
+  scope: Namespaced
+  version: v1
+  names:
+    plural: tenantnetworks
+    singular: tenantnetwork
+    kind: TenantNetwork
+    shortNames:
+      - tn
+      - tnet
+    categories:
+      - all
+  validation:
+    openAPIV3Schema:
+      properties:
+        spec:
+          properties:
+            NetworkID:
+              type: string
+            NetworkType:
+              type: string
+            Options:
+              properties:
+                cidr:
+                  oneOf:
+                    - type: string
+                      maxLength: 0
+                    - type: string
+                      format: cidr
+                      pattern: '^\d+\.'
+                allocation_pool:
+                  properties:
+                    start:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv4
+                    end:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv4
+                    lastIp:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: '^\d+\.'
+                container_prefix:
+                  type: string
+                host_device:
+                  type: string
+                device_pool:
+                  type: string
+                vxlan:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 16777214
+                vlan:
+                  type: integer
+                  format: int32
+                  minimum: 1
+                  maximum: 4094
+                rt_tables:
+                  type: integer
+                  format: int32
+                  minimum: 0
+                  maximum: 255
+                net6:
+                  oneOf:
+                    - type: string
+                      maxLength: 0
+                    - type: string
+                      format: cidr
+                      pattern: ':'
+                allocation_pool_v6:
+                  properties:
+                    start:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv6
+                    end:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: ipv6
+                    lastIp:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: ':'
+                    cidr:
+                      oneOf:
+                        - type: string
+                          maxLength: 0
+                        - type: string
+                          format: cidr
+                          pattern: ':'
+                routes:
+                  type: object
+                routes6:
+                  type: object
+---

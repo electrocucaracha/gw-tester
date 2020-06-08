@@ -8,30 +8,6 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: lte-s5u-flannel-cfg
-  namespace: kube-system
-data:
-  cni-conf.json: |
-    {
-      "name": "lte-s5u",
-      "cniVersion": "0.3.1",
-      "subnetFile": "/run/flannel/lte-s5u.env",
-      "dataDir": "/var/lib/cni/flannel_s5u",
-      "delegate": {
-        "bridge": "kbr6"
-      }
-    }
-  net-conf.json: |
-    {
-      "Network": "172.25.0.0/24",
-      "Backend": {
-        "Type": "vxlan"
-      }
-    }
----
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -90,6 +66,20 @@ spec:
         - operator: Exists
           effect: NoSchedule
       serviceAccountName: flannel
+      initContainers:
+        - name: install-cni
+          image: quay.io/coreos/flannel:v0.12.0-amd64
+          command:
+            - cp
+          args:
+            - -f
+            - /tmp/cni-configs/s5u.conf
+            - /etc/cni/net.d/s5u.conf
+          volumeMounts:
+            - name: destination
+              mountPath: /etc/cni/net.d
+            - name: source
+              mountPath: /tmp/cni-configs/
       containers:
         - name: kube-flannel
           image: quay.io/coreos/flannel:v0.12.0-amd64
@@ -127,6 +117,9 @@ spec:
         - name: run
           hostPath:
             path: /run/flannel
-        - name: cni
+        - name: destination
           hostPath:
             path: /etc/cni/net.d
+        - name: source
+          configMap:
+            name: lte-s5u-flannel-cfg

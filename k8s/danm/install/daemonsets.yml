@@ -1,0 +1,114 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: danm-cni
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      danm.k8s.io: danm-cni
+  template:
+    metadata:
+      labels:
+        danm.k8s.io: danm-cni
+    spec:
+      containers:
+        - name: danm-cni
+          image: danm-cni-plugins
+          volumeMounts:
+            - name: cni
+              mountPath: /host/cni
+      hostNetwork: true
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+      terminationGracePeriodSeconds: 0
+      volumes:
+        - name: cni
+          hostPath:
+            path: /opt/cni/bin
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: netwatcher
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      danm.k8s.io: netwatcher
+  template:
+    metadata:
+      labels:
+        danm.k8s.io: netwatcher
+    spec:
+      serviceAccountName: netwatcher
+      hostNetwork: true
+      dnsPolicy: ClusterFirst
+      hostIPC: true
+      hostPID: true
+      containers:
+        - name: netwatcher
+          image: netwatcher
+          securityContext:
+            capabilities:
+              add:
+                - SYS_PTRACE
+                - SYS_ADMIN
+                - NET_ADMIN
+                - NET_RAW
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+      terminationGracePeriodSeconds: 0
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: svcwatcher
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      danm.k8s.io: svcwatcher
+  template:
+    metadata:
+      annotations:
+        # Adapt to your own network environment!
+        danm.k8s.io/interfaces: |
+          [
+            {
+              "network":"mgmt-net"
+            }
+          ]
+      labels:
+        danm.k8s.io: svcwatcher
+    spec:
+      serviceAccountName: svcwatcher
+      dnsPolicy: ClusterFirst
+      nodeSelector:
+        "node-role.kubernetes.io/master": ""
+      containers:
+        - name: svcwatcher
+          image: svcwatcher
+          imagePullPolicy: IfNotPresent
+          args:
+            - "--logtostderr"
+      tolerations:
+        - effect: NoSchedule
+          operator: Exists
+        - effect: NoExecute
+          operator: Exists
+      terminationGracePeriodSeconds: 0

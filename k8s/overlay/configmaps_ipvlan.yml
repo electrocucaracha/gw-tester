@@ -1,0 +1,114 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lte-euu-flannel-cfg
+  namespace: kube-system
+data:
+  euu.conf: |
+    {
+      "name": "lte-euu",
+      "cniVersion": "0.3.1",
+      "type": "ipvlan",
+      "master": "eth0",
+      "ipam": {}
+    }
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lte-sgi-flannel-cfg
+  namespace: kube-system
+data:
+  sgi.conf: |
+    {
+      "name": "lte-sgi",
+      "cniVersion": "0.3.1",
+      "type": "ipvlan",
+      "master": "eth0",
+      "ipam": {}
+    }
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lte-s1u-flannel-cfg
+  namespace: kube-system
+data:
+  s1u.conf: |
+    {
+      "name": "lte-s1u",
+      "cniVersion": "0.3.1",
+      "type": "ipvlan",
+      "master": "eth0",
+      "ipam": {}
+    }
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lte-s1c-flannel-cfg
+  namespace: kube-system
+data:
+  s1c.conf: |
+    {
+      "name": "lte-s1c",
+      "cniVersion": "0.3.1",
+      "type": "ipvlan",
+      "master": "eth0",
+      "ipam": {}
+    }
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lte-s11-flannel-cfg
+  namespace: kube-system
+data:
+  s11.conf: |
+    {
+      "name": "lte-s11",
+      "cniVersion": "0.3.1",
+      "type": "ipvlan",
+      "master": "eth0",
+      "ipam": {}
+    }
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lte-s5u-flannel-cfg
+  namespace: kube-system
+data:
+  s5u.conf: |
+    {
+      "name": "lte-s5u",
+      "cniVersion": "0.3.1",
+      "type": "ipvlan",
+      "master": "eth0",
+      "ipam": {}
+    }
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: lte-s5c-flannel-cfg
+  namespace: kube-system
+data:
+  s5c.conf: |
+    {
+      "name": "lte-s5c",
+      "cniVersion": "0.3.1",
+      "type": "ipvlan",
+      "master": "eth0",
+      "ipam": {}
+    }

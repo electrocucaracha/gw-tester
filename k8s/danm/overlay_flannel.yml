@@ -1,0 +1,65 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: danm.k8s.io/v1
+kind: ClusterNetwork
+metadata:
+  name: lte-euu
+spec:
+  NetworkID: euu
+  NetworkType: flannel
+---
+apiVersion: danm.k8s.io/v1
+kind: ClusterNetwork
+metadata:
+  name: lte-sgi
+spec:
+  NetworkID: sgi
+  NetworkType: flannel
+---
+apiVersion: danm.k8s.io/v1
+kind: ClusterNetwork
+metadata:
+  name: lte-s1u
+spec:
+  NetworkID: s1u
+  NetworkType: flannel
+---
+apiVersion: danm.k8s.io/v1
+kind: ClusterNetwork
+metadata:
+  name: lte-s1c
+spec:
+  NetworkID: s1c
+  NetworkType: flannel
+---
+apiVersion: danm.k8s.io/v1
+kind: ClusterNetwork
+metadata:
+  name: lte-s11
+spec:
+  NetworkID: s11
+  NetworkType: flannel
+---
+apiVersion: danm.k8s.io/v1
+kind: ClusterNetwork
+metadata:
+  name: lte-s5u
+spec:
+  NetworkID: s5u
+  NetworkType: flannel
+---
+apiVersion: danm.k8s.io/v1
+kind: ClusterNetwork
+metadata:
+  name: lte-s5c
+spec:
+  NetworkID: s5c
+  NetworkType: flannel

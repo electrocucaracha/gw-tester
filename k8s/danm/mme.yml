@@ -1,0 +1,101 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mme
+  annotations:
+    danm.k8s.io/interfaces: |
+      [
+        {"clusterNetwork":"default"},
+        {"clusterNetwork":"lte-s11"},
+        {"clusterNetwork":"lte-s1c"}
+      ]
+  labels:
+    app.kubernetes.io/name: mme
+    network: epc
+spec:
+  initContainers:
+    - name: install
+      image: electrocucaracha/mme:0.7.5
+      command: ["cp", "/etc/gw-tester/mme.yml", "/work-dir/mme.yml"]
+      volumeMounts:
+        - name: config
+          mountPath: /etc/gw-tester/
+        - name: workdir
+          mountPath: /work-dir
+    - name: configure
+      image: electrocucaracha/mme:0.7.5
+      env:
+        - name: sgw_s11_ip
+          value: $SGW_S11_IP
+        - name: pgw_s5c_ip
+          value: $PGW_S5C_IP
+      command:
+        - "sh"
+      args:
+        - "/opt/gw-tester/script/init.sh"
+      volumeMounts:
+        - name: init-script
+          mountPath: /opt/gw-tester/script
+        - name: workdir
+          mountPath: /etc/gw-tester
+  containers:
+    - image: electrocucaracha/mme:0.7.5
+      name: mme
+      command: ["/opt/gw-tester/bin/mme", "-config", "/etc/gw-tester/mme.yml"]
+      volumeMounts:
+        - name: workdir
+          mountPath: /etc/gw-tester
+  volumes:
+    - name: init-script
+      configMap:
+        name: mme-init-script
+    - name: workdir
+      emptyDir: {}
+    - name: config
+      configMap:
+        name: mme-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mme-init-script
+data:
+  init.sh: |
+    ip a
+    ip route
+
+    s11_ip=$(ifconfig $(ip route get 172.22.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    s1c_ip=$(ifconfig $(ip route get 172.21.1.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+
+    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
+    sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
+
+    sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$sgw_s11_ip\"|g" /etc/gw-tester/mme.yml
+    sed -i "s|pgw_s5c_ip:.*|pgw_s5c_ip: \"$pgw_s5c_ip\"|g" /etc/gw-tester/mme.yml
+
+    cat /etc/gw-tester/mme.yml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mme-config
+data:
+  mme.yml: |
+    mcc: "001"
+    mnc: "01"
+    apn: "gw-tester.go-gtp.example"
+    local_addresses:
+      s1c_addr: "172.21.1.12:36412"
+      s11_ip: "172.22.0.12"
+    sgw_s11_ip: "172.22.0.13"
+    pgw_s5c_ip: "172.25.1.14"

@@ -1,3 +1,7 @@
 .vagrant/
 *.swp
 .tox/
+
+# DANM
+k8s/danm/kustomization.yml
+k8s/danm/install/deployments.yml

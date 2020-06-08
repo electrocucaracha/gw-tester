@@ -13,6 +13,9 @@ set -o errexit
 set -o nounset
 set -o xtrace
 
+# Wait for CoreDNS service
+kubectl rollout status deployment/coredns -n kube-system
+
 # Get an IP Cluster
 kubectl apply -f etcd.yml
 
@@ -25,5 +28,5 @@ until kubectl logs "$flannel_etdc_pod" -n kube-system | grep "ready to serve cli
 done
 
 # Create Flannel separate services for every network
-kubectl apply -f rbac.yml
+kubectl apply -f "configmaps_${PLUGIN_CNI:-flannel}.yml"
 kubectl apply -f ./lte-networks/

@@ -61,6 +61,9 @@ EONG
         for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
             kubectl wait --for=condition=ready "node/$node" --timeout=120s
         done
+        if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
+            kubectl apply -f k8s/skydive.yml
+        fi
 
         # Create Multiple Networks
         kubectl label nodes k8s-worker flannel-etcd=true --overwrite

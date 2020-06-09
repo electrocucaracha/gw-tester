@@ -17,6 +17,7 @@ $no_proxy += ",10.0.2.15,10.10.17.4"
 $socks_proxy = ENV['socks_proxy'] || ENV['SOCKS_PROXY'] || ""
 $deployment_type = ENV['DEPLOY'] || "docker"
 $cni_type = ENV['CNI'] || "multus"
+$enable_skydive = ENV['ENABLE_SKYDIVE'] || "false"
 
 Vagrant.configure(2) do |config|
   config.vm.provider :libvirt
@@ -72,6 +73,7 @@ Vagrant.configure(2) do |config|
     sh.env = {
       'DEPLOYMENT_TYPE': "#{$deployment_type}",
       'MULTI_CNI': "#{$cni_type}",
+      'ENABLE_SKYDIVE': "#{$enable_skydive}",
       'HOST_IP': "10.10.17.4"
     }
     sh.inline = <<-SHELL
@@ -83,4 +85,5 @@ Vagrant.configure(2) do |config|
       ./deploy.sh | tee ~/deploy.log
     SHELL
   end
+  config.vm.network :forwarded_port, guest: 8082, host: 8082
 end

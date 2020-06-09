@@ -21,6 +21,9 @@ nodes:
     extraMounts:
       - hostPath: /opt/containernetworking/plugins
         containerPath: /opt/cni/bin
+    extraPortMappings:
+      - containerPort: 32015
+        hostPort: 8082
   - role: worker
     image: kindest/node:v1.18.2
     extraMounts:

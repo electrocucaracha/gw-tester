@@ -30,7 +30,7 @@ spec:
             - '--endpoint=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
             - set
             - '/s5u/network/config'
-            - '{ "Network": "172.25.0.0/24", "Backend": {"Type": "vxlan", "VNI": 7}}'
+            - '{ "Network": "172.25.0.0/24", "Backend": {"Type": "vxlan", "VNI": 7, "DirectRouting": true}}'
       restartPolicy: Never
 ---
 apiVersion: apps/v1

@@ -30,7 +30,7 @@ spec:
             - '--endpoint=http://$(FLANNEL_ETCD_SERVICE_HOST):12379'
             - set
             - '/sgi/network/config'
-            - '{ "Network": "10.0.1.0/24", "Backend": {"Type": "vxlan", "VNI": 3}}'
+            - '{ "Network": "10.0.1.0/24", "Backend": {"Type": "vxlan", "VNI": 3, "DirectRouting": true}}'
       restartPolicy: Never
 ---
 apiVersion: apps/v1

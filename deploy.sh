@@ -19,8 +19,14 @@ case ${DEPLOYMENT_TYPE:-docker} in
         make docker-logs
     ;;
     k8s)
-        make k8s-deploy
-        make k8s-logs
-        make k8s-deploy-demo
+        if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
+            make helm-deploy
+            make helm-logs
+            make helm-deploy-demo
+        else
+            make k8s-deploy
+            make k8s-logs
+            make k8s-deploy-demo
+        fi
     ;;
 esac

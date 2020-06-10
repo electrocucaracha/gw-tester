@@ -13,19 +13,9 @@ set -o errexit
 set -o nounset
 set -o xtrace
 
-./undeploy_demo.sh
-
-if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
-    for chart in saegw mme enb; do
-        if helm ls | grep "$chart"; then
-            helm uninstall "$chart"
-        fi
-    done
-else
-    for pod in pgw sgw mme enb; do
-        kubectl delete -f "${pod}.yml" --wait=false --ignore-not-found=true
-    done
-    for pod in pgw sgw mme enb; do
-        kubectl wait --for=delete "pod/$pod" --timeout=120s || true
-    done
-fi
+for pod in http-server external-client; do
+    kubectl delete -f "./${MULTI_CNI:-multus}/${pod}.yml" --wait=false --ignore-not-found=true
+done
+for pod in http-server external-client; do
+    kubectl wait --for=delete "pod/$pod" --timeout=120s || true
+done

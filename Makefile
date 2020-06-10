@@ -32,13 +32,13 @@ docker-debug:
 	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml logs --follow external_client
 
 k8s-deploy:
-	cd ./k8s/"$${MULTI_CNI:-multus}"; ./deploy_main.sh
+	cd ./k8s; ./deploy_main.sh
 k8s-undeploy:
-	cd ./k8s/"$${MULTI_CNI:-multus}"; ./undeploy_main.sh
+	cd ./k8s; ./undeploy_main.sh
 k8s-deploy-demo:
-	cd ./k8s/"$${MULTI_CNI:-multus}"; ./deploy_demo.sh
+	cd ./k8s; ./deploy_demo.sh
 k8s-undeploy-demo:
-	cd ./k8s/"$${MULTI_CNI:-multus}"; ./undeploy_demo.sh
+	cd ./k8s; ./undeploy_demo.sh
 k8s-logs:
 	for pod in pgw sgw mme enb; do \
 		echo "--- $${pod} ---"; \
@@ -53,9 +53,9 @@ k8s-configure:
 	done
 
 helm-deploy:
-	cd ./k8s/"$${MULTI_CNI:-multus}"; PKG_MGR=helm ./deploy_main.sh
+	cd ./k8s; PKG_MGR=helm ./deploy_main.sh
 helm-undeploy:
-	cd ./k8s/"$${MULTI_CNI:-multus}"; PKG_MGR=helm ./undeploy_main.sh
+	cd ./k8s; PKG_MGR=helm ./undeploy_main.sh
 helm-deploy-demo: k8s-deploy-demo
 helm-undeploy-demo: k8s-undeploy-demo
 helm-logs:

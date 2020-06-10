@@ -1,0 +1,3 @@
+1. Get the IP addresses by running these commands:
+
+kubectl get pods -l=app.kubernetes.io/name=pgw -o jsonpath='{range .items[0].status.podIPs[*]}{.ip}{"\n"}'

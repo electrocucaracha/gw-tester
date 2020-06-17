@@ -21,3 +21,9 @@ matrix:
     - language: shell
       script:
         - bash -c 'shopt -s globstar; shellcheck -x **/*.sh'
+
+    - language: shell
+      install:
+        - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+      script:
+        - find k8s -name Chart.yaml -exec dirname {} \; | xargs helm lint

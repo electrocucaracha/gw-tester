@@ -56,7 +56,8 @@ case ${DEPLOYMENT_TYPE:-docker} in
             newgrp docker <<EONG
             kind create cluster --name k8s --config=./k8s/kind-config.yml
 EONG
-            kubectl apply -f ./k8s/overlay/mgmt_net.yml
+            # Create K8s Pod network
+            kubectl apply -f ./k8s/overlay/pod_subnet.yml
         fi
         for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
             kubectl wait --for=condition=ready "node/$node" --timeout=120s

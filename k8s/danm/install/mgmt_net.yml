@@ -11,7 +11,7 @@
 apiVersion: danm.k8s.io/v1
 kind: DanmNet
 metadata:
-  name: mgmt-net
+  name: pod-subnet
   namespace: kube-system
 spec:
   NetworkID: flannel

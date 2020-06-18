@@ -91,7 +91,7 @@ spec:
         danm.k8s.io/interfaces: |
           [
             {
-              "network":"mgmt-net"
+              "network":"pod-subnet"
             }
           ]
       name: danm-webhook

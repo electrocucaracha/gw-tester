@@ -85,18 +85,11 @@ spec:
       danm.k8s.io: svcwatcher
   template:
     metadata:
-      annotations:
-        # Adapt to your own network environment!
-        danm.k8s.io/interfaces: |
-          [
-            {
-              "network":"mgmt-net"
-            }
-          ]
       labels:
         danm.k8s.io: svcwatcher
     spec:
       serviceAccountName: svcwatcher
+      hostNetwork: true
       dnsPolicy: ClusterFirst
       nodeSelector:
         "node-role.kubernetes.io/master": ""

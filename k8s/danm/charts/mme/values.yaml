@@ -10,10 +10,10 @@
 
 s11:
   name: lte-s11
-  networkId: 172.22.0.0
+  container_prefix: s11
 s1c:
   name: lte-s1c
-  networkId: 172.21.1.0
+  container_prefix: s1c
 
 sgw:
   s11:

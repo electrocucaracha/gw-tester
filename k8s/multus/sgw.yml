@@ -15,10 +15,10 @@ metadata:
   annotations:
     k8s.v1.cni.cncf.io/networks: |
       [
-        {"name": "lte-s11", "interface": "net1"},
-        {"name": "lte-s1u", "interface": "net2"},
-        {"name": "lte-s5u", "interface": "net3"},
-        {"name": "lte-s5c", "interface": "net4"}
+        {"name": "lte-s11", "interface": "s111"},
+        {"name": "lte-s1u", "interface": "s1u2"},
+        {"name": "lte-s5u", "interface": "s5u3"},
+        {"name": "lte-s5c", "interface": "s5c4"}
       ]
   labels:
     app.kubernetes.io/name: sgw
@@ -73,10 +73,10 @@ data:
     ip a
     ip route
 
-    s11_ip=$(ifconfig net1 | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig net2 | awk '/inet addr/{print substr($2,6)}')
-    s5u_ip=$(ifconfig net3 | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig net4 | awk '/inet addr/{print substr($2,6)}')
+    s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig s1u2 | awk '/inet addr/{print substr($2,6)}')
+    s5u_ip=$(ifconfig s5u3 | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig s5c4 | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml

@@ -15,9 +15,9 @@ metadata:
   annotations:
     k8s.v1.cni.cncf.io/networks: |
       [
-        {"name": "lte-s5u", "interface": "net1"},
-        {"name": "lte-s5c", "interface": "net2"},
-        {"name": "lte-sgi", "interface": "net3"}
+        {"name": "lte-s5u", "interface": "s5u1"},
+        {"name": "lte-s5c", "interface": "s5c2"},
+        {"name": "lte-sgi", "interface": "sgi3"}
       ]
   labels:
     app.kubernetes.io/name: pgw
@@ -72,8 +72,8 @@ data:
     ip a
     ip route
 
-    s5u_ip=$(ifconfig net1 | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig net2 | awk '/inet addr/{print substr($2,6)}')
+    s5u_ip=$(ifconfig s5u1 | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig s5c2 | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/pgw.yml
@@ -89,5 +89,5 @@ data:
     local_addresses:
       s5c_ip: "172.25.1.14"
       s5u_ip: "172.25.0.14"
-    sgi_if_name: "net3"
+    sgi_if_name: "sgi3"
     route_subnet: "10.0.1.0/24"

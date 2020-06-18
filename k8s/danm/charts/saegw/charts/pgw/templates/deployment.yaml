@@ -82,12 +82,12 @@ metadata:
   name: pgw-init-script
 data:
   init.sh: |
-    ip a
+    ip addr
     ip route
 
-    s5u_ip=$(ifconfig $(ip route get {{ .Values.s5u.networkId }} | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig $(ip route get {{ .Values.s5c.networkId }} | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    sgi_nic=$(ip route get {{ .Values.sgi.networkId }} | awk '{print $5}')
+    s5u_ip=$(ifconfig $(ip addr | grep {{ .Values.s5u.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig $(ip addr | grep {{ .Values.s5c.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    sgi_nic=$(ip addr | grep {{ .Values.sgi.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}')
 
     sed -i "s|sgi_if_name:.*|sgi_if_name: \"${sgi_nic}\"|g" /etc/gw-tester/pgw.yml
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml

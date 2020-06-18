@@ -15,9 +15,9 @@ metadata:
   annotations:
     k8s.v1.cni.cncf.io/networks: |
       [
-        {"name": "lte-euu", "interface": "net1"},
-        {"name": "lte-s1c", "interface": "net2"},
-        {"name": "lte-s1u", "interface": "net3"}
+        {"name": "lte-euu", "interface": "euu1"},
+        {"name": "lte-s1c", "interface": "s1c2"},
+        {"name": "lte-s1u", "interface": "s1u3"}
       ]
   labels:
     app.kubernetes.io/name: enb
@@ -85,9 +85,9 @@ data:
     ip a
     ip route
 
-    euu_ip=$(ifconfig net1 | awk '/inet addr/{print substr($2,6)}')
-    s1c_ip=$(ifconfig net2 | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig net3 | awk '/inet addr/{print substr($2,6)}')
+    euu_ip=$(ifconfig euu1 | awk '/inet addr/{print substr($2,6)}')
+    s1c_ip=$(ifconfig s1c2 | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig s1u3 | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
@@ -102,7 +102,7 @@ data:
         src_ip: "10.0.3.$i"
         i_tei: 0
         type: "external"
-        euu_if_name: "net1"
+        euu_if_name: "euu1"
         http_url: ""
         reattach_on_reload: false
     EOL

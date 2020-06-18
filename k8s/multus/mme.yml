@@ -15,8 +15,8 @@ metadata:
   annotations:
     k8s.v1.cni.cncf.io/networks: |
       [
-        {"name": "lte-s11", "interface": "net1"},
-        {"name": "lte-s1c", "interface": "net2"}
+        {"name": "lte-s11", "interface": "s111"},
+        {"name": "lte-s1c", "interface": "s1c2"}
       ]
   labels:
     app.kubernetes.io/name: mme
@@ -73,8 +73,8 @@ data:
     ip a
     ip route
 
-    s11_ip=$(ifconfig net1 | awk '/inet addr/{print substr($2,6)}')
-    s1c_ip=$(ifconfig net2 | awk '/inet addr/{print substr($2,6)}')
+    s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
+    s1c_ip=$(ifconfig s1c2 | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
     sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml

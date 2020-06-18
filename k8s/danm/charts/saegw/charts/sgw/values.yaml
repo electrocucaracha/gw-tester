@@ -10,16 +10,16 @@
 
 s11:
   name: lte-s11
-  networkId: 172.22.0.0
+  container_prefix: s11
 s1u:
   name: lte-s1u
-  networkId: 172.21.0.0
+  container_prefix: s1u
 s5u:
   name: lte-s5u
-  networkId: 172.25.0.0
+  container_prefix: s5u
 s5c:
   name: lte-s5c
-  networkId: 172.25.1.0
+  container_prefix: s5c
 
 replicaCount: 1
 

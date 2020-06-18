@@ -86,10 +86,9 @@ data:
     ip a
     ip route
 
-    euu_nic=$(ip route get 10.0.3.0 | awk '{print $5}')
-    euu_ip=$(ifconfig $euu_nic | awk '/inet addr/{print substr($2,6)}')
-    s1c_ip=$(ifconfig $(ip route get 172.21.1.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig $(ip route get 172.21.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    euu_ip=$(ifconfig euu1 | awk '/inet addr/{print substr($2,6)}')
+    s1c_ip=$(ifconfig s1c2 | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig s1u3 | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
@@ -104,7 +103,7 @@ data:
         src_ip: "10.0.3.$i"
         i_tei: 0
         type: "external"
-        euu_if_name: "$euu_nic"
+        euu_if_name: "euu1"
         http_url: ""
         reattach_on_reload: false
     EOL

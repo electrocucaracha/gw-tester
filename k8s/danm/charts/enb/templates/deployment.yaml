@@ -95,13 +95,13 @@ metadata:
   name: enb-init-script
 data:
   init.sh: |2
-    ip a
+    ip addr
     ip route
 
-    euu_nic=$(ip route get {{ .Values.euu.networkId }} | awk '{print $5}')
+    euu_nic=$(ip addr | grep {{ .Values.euu.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}')
     euu_ip=$(ifconfig $euu_nic | awk '/inet addr/{print substr($2,6)}')
-    s1c_ip=$(ifconfig $(ip route get {{ .Values.s1c.networkId }} | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig $(ip route get {{ .Values.s1u.networkId }} | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    s1c_ip=$(ifconfig $(ip addr | grep {{ .Values.s1c.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig $(ip addr | grep {{ .Values.s1u.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml

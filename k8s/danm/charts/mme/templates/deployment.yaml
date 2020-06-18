@@ -83,11 +83,11 @@ metadata:
   name: mme-init-script
 data:
   init.sh: |
-    ip a
+    ip addr
     ip route
 
-    s11_ip=$(ifconfig $(ip route get {{ .Values.s11.networkId }} | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    s1c_ip=$(ifconfig $(ip route get {{ .Values.s1c.networkId }} | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    s11_ip=$(ifconfig $(ip addr | grep {{ .Values.s11.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    s1c_ip=$(ifconfig $(ip addr | grep {{ .Values.s1c.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
     sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml

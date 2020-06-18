@@ -16,6 +16,7 @@ spec:
   NetworkID: euu
   NetworkType: ipvlan
   Options:
+    container_prefix: euu
     host_device: eth0
     vxlan: 2
     cidr: 10.0.3.0/24
@@ -31,6 +32,7 @@ spec:
   NetworkID: sgi
   NetworkType: ipvlan
   Options:
+    container_prefix: sgi
     host_device: eth0
     vxlan: 3
     cidr: 10.0.1.0/24
@@ -46,6 +48,7 @@ spec:
   NetworkID: s1u
   NetworkType: ipvlan
   Options:
+    container_prefix: s1u
     host_device: eth0
     vxlan: 4
     cidr: 172.21.0.0/24
@@ -61,6 +64,7 @@ spec:
   NetworkID: s1c
   NetworkType: ipvlan
   Options:
+    container_prefix: s1c
     host_device: eth0
     vxlan: 5
     cidr: 172.21.1.0/24
@@ -76,6 +80,7 @@ spec:
   NetworkID: s11
   NetworkType: ipvlan
   Options:
+    container_prefix: s11
     host_device: eth0
     vxlan: 6
     cidr: 172.22.0.0/24
@@ -91,6 +96,7 @@ spec:
   NetworkID: s5u
   NetworkType: ipvlan
   Options:
+    container_prefix: s5u
     host_device: eth0
     vxlan: 7
     cidr: 172.25.0.0/24
@@ -106,6 +112,7 @@ spec:
   NetworkID: s5c
   NetworkType: ipvlan
   Options:
+    container_prefix: s5c
     host_device: eth0
     vxlan: 8
     cidr: 172.25.1.0/24

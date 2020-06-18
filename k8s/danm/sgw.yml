@@ -74,10 +74,10 @@ data:
     ip a
     ip route
 
-    s11_ip=$(ifconfig $(ip route get 172.22.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig $(ip route get 172.21.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    s5u_ip=$(ifconfig $(ip route get 172.25.0.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig $(ip route get 172.25.1.0 | awk '{print $5}') | awk '/inet addr/{print substr($2,6)}')
+    s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig s1u2 | awk '/inet addr/{print substr($2,6)}')
+    s5u_ip=$(ifconfig s5u3 | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig s5c4 | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml

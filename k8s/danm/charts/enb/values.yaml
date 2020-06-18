@@ -10,13 +10,13 @@
 
 euu:
   name: lte-euu
-  networkId: 10.0.3.0
+  container_prefix: euu
 s1c:
   name: lte-s1c
-  networkId: 172.21.1.0
+  container_prefix: s1c
 s1u:
   name: lte-s1u
-  networkId: 172.21.0.0
+  container_prefix: s1c
 
 mme:
   s1c:

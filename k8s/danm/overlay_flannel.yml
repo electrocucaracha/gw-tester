@@ -15,6 +15,8 @@ metadata:
 spec:
   NetworkID: euu
   NetworkType: flannel
+  Options:
+    container_prefix: euu
 ---
 apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
@@ -23,6 +25,8 @@ metadata:
 spec:
   NetworkID: sgi
   NetworkType: flannel
+  Options:
+    container_prefix: sgi
 ---
 apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
@@ -31,6 +35,8 @@ metadata:
 spec:
   NetworkID: s1u
   NetworkType: flannel
+  Options:
+    container_prefix: s1u
 ---
 apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
@@ -39,6 +45,8 @@ metadata:
 spec:
   NetworkID: s1c
   NetworkType: flannel
+  Options:
+    container_prefix: s1c
 ---
 apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
@@ -47,6 +55,8 @@ metadata:
 spec:
   NetworkID: s11
   NetworkType: flannel
+  Options:
+    container_prefix: s11
 ---
 apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
@@ -55,6 +65,8 @@ metadata:
 spec:
   NetworkID: s5u
   NetworkType: flannel
+  Options:
+    container_prefix: s5u
 ---
 apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
@@ -63,3 +75,5 @@ metadata:
 spec:
   NetworkID: s5c
   NetworkType: flannel
+  Options:
+    container_prefix: s5c

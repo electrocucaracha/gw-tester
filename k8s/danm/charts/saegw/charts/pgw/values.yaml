@@ -10,13 +10,13 @@
 
 s5u:
   name: lte-s5u
-  networkId: 172.25.0.0
+  container_prefix: s5u
 s5c:
   name: lte-s5c
-  networkId: 172.25.1.0
+  container_prefix: s5c
 sgi:
   name: lte-sgi
-  networkId: 10.0.1.0
+  container_prefix: sgi
   subnet: 10.0.1.0/24
 
 replicaCount: 1

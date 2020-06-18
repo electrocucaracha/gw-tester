@@ -28,7 +28,43 @@ spec:
 apiVersion: "k8s.cni.cncf.io/v1"
 kind: NetworkAttachmentDefinition
 metadata:
+  name: lte-euu
+  namespace: kube-system
+spec:
+  config: |
+    {
+      "name": "lte-euu",
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-euu.env",
+      "dataDir": "/var/lib/cni/flannel_euu",
+      "delegate": {
+        "bridge": "kbr1"
+      }
+    }
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
   name: lte-sgi
+spec:
+  config: |
+    {
+      "name": "lte-sgi",
+      "cniVersion": "0.3.1",
+      "type": "flannel",
+      "subnetFile": "/run/flannel/lte-sgi.env",
+      "dataDir": "/var/lib/cni/flannel_sgi",
+      "delegate": {
+        "bridge": "kbr2"
+      }
+    }
+---
+apiVersion: "k8s.cni.cncf.io/v1"
+kind: NetworkAttachmentDefinition
+metadata:
+  name: lte-sgi
+  namespace: kube-system
 spec:
   config: |
     {

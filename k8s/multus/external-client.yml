@@ -13,10 +13,7 @@ kind: Pod
 metadata:
   name: external-client
   annotations:
-    k8s.v1.cni.cncf.io/networks: |
-      [
-        {"name": "lte-euu"}
-      ]
+    v1.multus-cni.io/default-network: lte-euu
 spec:
   affinity:
     podAffinity:

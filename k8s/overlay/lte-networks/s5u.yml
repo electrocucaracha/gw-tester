@@ -61,10 +61,9 @@ spec:
                     operator: In
                     values:
                       - amd64
+                  - key: node-role.kubernetes.io/master
+                    operator: DoesNotExist
       hostNetwork: true
-      tolerations:
-        - operator: Exists
-          effect: NoSchedule
       serviceAccountName: flannel
       initContainers:
         - name: install-cni

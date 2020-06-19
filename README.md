@@ -42,21 +42,21 @@ of the [bootstrap-vagrant project][3] for installing Vagrant
 dependencies and plugins required for its project. The script
 supports two Virtualization providers (Libvirt and VirtualBox).
 
-    $ curl -fsSL http://bit.ly/initVagrant | PROVIDER=libvirt bash
+    curl -fsSL http://bit.ly/initVagrant | PROVIDER=libvirt bash
 
 Once Vagrant is installed, it's possible to deploy the demo with the
 following instruction:
 
-    $ DEPLOY=k8s vagrant up
+    DEPLOY=k8s vagrant up
 
 ### Post-provision
 
 Once the Virtual Machine is provisioned by Vagrant, it's possible to
 check the logs of the different containers.
 
-    $ vagrant ssh
-    $ cd /vagrant
-    $ make k8s-logs
+    vagrant ssh
+    cd /vagrant
+    make k8s-logs
 
 ### SkyDive
 

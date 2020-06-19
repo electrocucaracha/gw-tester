@@ -8,22 +8,20 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-matrix:
-  include:
-    - language: python
-      install:
-        - pip install tox
-      script:
-        - tox
-      env:
-        - TOXENV=lint
+name: Lint Code Base
+on:
+  push:
+    branches:
+      - 'master'
 
-    - language: shell
-      script:
-        - bash -c 'shopt -s globstar; shellcheck **/*.sh'
-
-    - language: shell
-      install:
-        - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      script:
-        - find k8s -name Chart.yaml -exec dirname {} \; | xargs helm lint
+jobs:
+  build:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Lint Code Base
+        uses: docker://github/super-linter:v2.0.0
+        env:
+          VALIDATE_YAML: false

@@ -14,7 +14,7 @@ set -o nounset
 set -o xtrace
 
 for pod in http-server external-client; do
-    kubectl delete -f "./${MULTI_CNI:-multus}/${pod}.yml" --wait=false --ignore-not-found=true
+    kubectl delete -f "${pod}.yml" --wait=false --ignore-not-found=true
 done
 for pod in http-server external-client; do
     kubectl wait --for=delete "pod/$pod" --timeout=120s || true

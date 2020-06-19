@@ -19,6 +19,13 @@ metadata:
         {"name": "lte-s5c", "interface": "s5c2"},
         {"name": "lte-sgi", "interface": "sgi3"}
       ]
+    danm.k8s.io/interfaces: |
+      [
+        {"clusterNetwork":"default"},
+        {"clusterNetwork":"lte-s5u"},
+        {"clusterNetwork":"lte-s5c"},
+        {"clusterNetwork":"lte-sgi"}
+      ]
   labels:
     app.kubernetes.io/name: pgw
     network: pdn

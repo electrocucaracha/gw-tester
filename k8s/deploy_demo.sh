@@ -27,7 +27,7 @@ else
     -o jsonpath='{range .items[0].status.podIPs[*]}{.ip}{"\n"}' | grep "10.0.1")
 fi
 export PGW_SGI_IP
-envsubst \$PGW_SGI_IP < "./${multi_cni}/http-server.yml" | kubectl apply -f -
+envsubst \$PGW_SGI_IP < http-server.yml | kubectl apply -f -
 kubectl wait --for=condition=ready pod http-server
 
 # Deploy External client
@@ -45,4 +45,4 @@ else
     -o jsonpath='{.status.podIPs[0].ip}')
 fi
 export ENB_EUU_IP HTTP_SERVER_SGI_IP
-envsubst \$ENB_EUU_IP,\$HTTP_SERVER_SGI_IP < "./${multi_cni}/external-client.yml" | kubectl apply -f -
+envsubst \$ENB_EUU_IP,\$HTTP_SERVER_SGI_IP < external-client.yml | kubectl apply -f -

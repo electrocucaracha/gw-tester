@@ -23,7 +23,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
     done
 else
     for pod in pgw sgw mme enb; do
-        kubectl delete -f "./${MULTI_CNI:-multus}/${pod}.yml" --wait=false --ignore-not-found=true
+        kubectl delete -f "${pod}.yml" --wait=false --ignore-not-found=true
     done
     for pod in pgw sgw mme enb; do
         kubectl wait --for=delete "pod/$pod" --timeout=120s || true

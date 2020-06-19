@@ -13,6 +13,7 @@ kind: Pod
 metadata:
   name: http-server
   annotations:
+    v1.multus-cni.io/default-network: lte-sgi
     danm.k8s.io/interfaces: |
       [
         {"clusterNetwork":"lte-sgi"}

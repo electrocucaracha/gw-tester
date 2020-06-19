@@ -19,6 +19,13 @@ metadata:
         {"name": "lte-s1c", "interface": "s1c2"},
         {"name": "lte-s1u", "interface": "s1u3"}
       ]
+    danm.k8s.io/interfaces: |
+      [
+        {"clusterNetwork":"default"},
+        {"clusterNetwork":"lte-euu"},
+        {"clusterNetwork":"lte-s1c"},
+        {"clusterNetwork":"lte-s1u"}
+      ]
   labels:
     app.kubernetes.io/name: enb
     network: e-utran

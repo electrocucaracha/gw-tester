@@ -11,34 +11,38 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: mme
+  name: sgw
   annotations:
+    k8s.v1.cni.cncf.io/networks: |
+      [
+        {"name": "lte-s11", "interface": "s111"},
+        {"name": "lte-s1u", "interface": "s1u2"},
+        {"name": "lte-s5u", "interface": "s5u3"},
+        {"name": "lte-s5c", "interface": "s5c4"}
+      ]
     danm.k8s.io/interfaces: |
       [
         {"clusterNetwork":"default"},
         {"clusterNetwork":"lte-s11"},
-        {"clusterNetwork":"lte-s1c"}
+        {"clusterNetwork":"lte-s1u"},
+        {"clusterNetwork":"lte-s5u"},
+        {"clusterNetwork":"lte-s5c"}
       ]
   labels:
-    app.kubernetes.io/name: mme
+    app.kubernetes.io/name: sgw
     network: epc
 spec:
   initContainers:
     - name: install
-      image: electrocucaracha/mme:0.7.5
-      command: ["cp", "/etc/gw-tester/mme.yml", "/work-dir/mme.yml"]
+      image: electrocucaracha/sgw:0.7.5
+      command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
       volumeMounts:
         - name: config
           mountPath: /etc/gw-tester/
         - name: workdir
           mountPath: /work-dir
     - name: configure
-      image: electrocucaracha/mme:0.7.5
-      env:
-        - name: sgw_s11_ip
-          value: $SGW_S11_IP
-        - name: pgw_s5c_ip
-          value: $PGW_S5C_IP
+      image: electrocucaracha/sgw:0.7.5
       command:
         - "sh"
       args:
@@ -49,53 +53,54 @@ spec:
         - name: workdir
           mountPath: /etc/gw-tester
   containers:
-    - image: electrocucaracha/mme:0.7.5
-      name: mme
-      command: ["/opt/gw-tester/bin/mme", "-config", "/etc/gw-tester/mme.yml"]
+    - image: electrocucaracha/sgw:0.7.5
+      name: sgw
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
+      command: ["/opt/gw-tester/bin/sgw", "-config", "/etc/gw-tester/sgw.yml"]
       volumeMounts:
         - name: workdir
           mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
-        name: mme-init-script
+        name: sgw-init-script
     - name: workdir
       emptyDir: {}
     - name: config
       configMap:
-        name: mme-config
+        name: sgw-config
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mme-init-script
+  name: sgw-init-script
 data:
   init.sh: |
     ip a
     ip route
 
     s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
-    s1c_ip=$(ifconfig s1c2 | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig s1u2 | awk '/inet addr/{print substr($2,6)}')
+    s5u_ip=$(ifconfig s5u3 | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig s5c4 | awk '/inet addr/{print substr($2,6)}')
 
-    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
-    sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
+    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
+    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml
+    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
+    sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/sgw.yml
 
-    sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$sgw_s11_ip\"|g" /etc/gw-tester/mme.yml
-    sed -i "s|pgw_s5c_ip:.*|pgw_s5c_ip: \"$pgw_s5c_ip\"|g" /etc/gw-tester/mme.yml
-
-    cat /etc/gw-tester/mme.yml
+    cat /etc/gw-tester/sgw.yml
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mme-config
+  name: sgw-config
 data:
-  mme.yml: |
-    mcc: "001"
-    mnc: "01"
-    apn: "gw-tester.go-gtp.example"
+  sgw.yml: |
     local_addresses:
-      s1c_addr: "172.21.1.12:36412"
-      s11_ip: "172.22.0.12"
-    sgw_s11_ip: "172.22.0.13"
-    pgw_s5c_ip: "172.25.1.14"
+      s11_ip: "172.22.0.13"
+      s1u_ip: "172.21.0.13"
+      s5c_ip: "172.25.1.13"
+      s5u_ip: "172.25.0.13"

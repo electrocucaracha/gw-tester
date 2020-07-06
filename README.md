@@ -60,9 +60,10 @@ check the logs of the different containers.
 
 ### SkyDive
 
-The [Skydive real-time network analyzer][4] is deployed during the
-provisioning process, this [link](http://10.10.17.4:8082) allows to
-access its dashboard.
+The [Skydive real-time network analyzer][4] can be deployed during the
+provisioning process using the `ENABLE_SKYDIVE` environment variable.
+Once the services are up and running it's possible to access it thru
+the [*8082* local port](http://127.0.0.1:8082).
 
 ![Skydive sample](docs/img/skydive.png)
 

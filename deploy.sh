@@ -11,21 +11,25 @@
 set -o pipefail
 set -o errexit
 set -o nounset
+set -o xtrace
 
 echo "Running deployment process..."
 case ${DEPLOYMENT_TYPE:-docker} in
     docker)
         make docker-deploy-demo
+        sudo docker ps
         make docker-logs
     ;;
     k8s)
         if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
             make helm-deploy
             make helm-logs
+            kubectl get pods -o wide
             make helm-deploy-demo
         else
             make k8s-deploy
             make k8s-logs
+            kubectl get pods -o wide
             make k8s-deploy-demo
         fi
     ;;

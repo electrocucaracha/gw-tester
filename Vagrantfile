@@ -24,7 +24,6 @@ Vagrant.configure(2) do |config|
   config.vm.provider :virtualbox
 
   config.vm.box = "generic/ubuntu1804"
-  config.vm.box_version = "3.0.8"
   config.vm.synced_folder './', '/vagrant'
 
   [:virtualbox, :libvirt].each do |provider|
@@ -86,4 +85,5 @@ Vagrant.configure(2) do |config|
     SHELL
   end
   config.vm.network :forwarded_port, guest: 8082, host: 8082
+  config.vm.network :forwarded_port, guest: 9000, host: 9000
 end

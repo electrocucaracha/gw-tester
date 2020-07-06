@@ -8,22 +8,40 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
-matrix:
+language: shell
+os: linux
+git:
+  depth: 1
+dist: bionic
+jobs:
   include:
-    - language: python
+    - name: Lint validation
       install:
-        - pip install tox
+        - curl -fsSL http://bit.ly/install_pkg | PKG="helm tox" bash
       script:
-        - tox
-      env:
-        - TOXENV=lint
-
-    - language: shell
-      script:
+        - tox -e lint
         - bash -c 'shopt -s globstar; shellcheck **/*.sh'
-
-    - language: shell
-      install:
-        - curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
-      script:
         - find k8s -name Chart.yaml -exec dirname {} \; | xargs helm lint
+    - name: Docker validation on Ubuntu 18.04 LTS Bare Metal
+      install:
+        - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
+      script:
+        - HOST_IP=$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }') ./install.sh
+        - ./deploy.sh
+    - name: Kubernetes + Multus CNI on Ubuntu 18.04 LTS Bare Metal
+      install:
+        - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
+      script:
+        - ./install.sh
+        - ./deploy.sh
+      env:
+        - DEPLOYMENT_TYPE=k8s
+    - name: Kubernetes + DANM CNI on Ubuntu 18.04 LTS Bare Metal
+      install:
+        - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
+      script:
+        - ./install.sh
+        - ./deploy.sh
+      env:
+        - DEPLOYMENT_TYPE=k8s
+        - MULTI_CNI=danm

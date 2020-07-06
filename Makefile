@@ -13,23 +13,24 @@ build:
 	done
 	sudo docker image prune --force
 pull:
-	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml pull
+	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml pull
 
 docker-deploy: docker-undeploy
-	sudo docker-compose --file docker/main.yml --file docker/overlay.yml up --force-recreate --detach --no-build
+	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml up --force-recreate --detach --no-build
 docker-undeploy:
-	sudo docker-compose --file docker/main.yml --file docker/overlay.yml down --remove-orphans
+	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml down --remove-orphans
 docker-deploy-demo: docker-undeploy-demo
-	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
+	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
 docker-undeploy-demo:
-	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml down --remove-orphans
+	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml down --remove-orphans
 docker-logs:
 	for service in pgw sgw mme enb; do \
 		echo "--- $${service} ---"; \
-		sudo docker logs docker_$${service}_1; \
+		container=$$(docker ps --filter "name=docker_$${service}_1*" --format "{{.Names}}"); \
+		sudo docker logs $${container}; \
 	done
 docker-debug:
-	sudo docker-compose --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml logs --follow external_client
+	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml logs --follow external_client
 
 k8s-deploy:
 	cd ./k8s; ./deploy_main.sh

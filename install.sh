@@ -36,6 +36,10 @@ case ${DEPLOYMENT_TYPE:-docker} in
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
             sudo docker-compose --file docker/skydive/docker-compose.yml up --detach
         fi
+        if [ "${ENABLE_PORTAINER:-false}" == "true" ]; then
+            curl -L https://downloads.portainer.io/portainer-agent-stack.yml -o portainer-agent-stack.yml
+            docker stack deploy --compose-file=portainer-agent-stack.yml portainer
+        fi
         make pull
     ;;
     k8s)
@@ -52,9 +56,9 @@ case ${DEPLOYMENT_TYPE:-docker} in
         fi
 
         # Deploy Kubernetes Cluster
-        if ! sudo kind get clusters | grep -e k8s; then
+        if ! sudo "$(command -v kind)" get clusters | grep -e k8s; then
             newgrp docker <<EONG
-            kind create cluster --name k8s --config=./k8s/kind-config.yml
+            kind create cluster --name k8s --config=./k8s/kind-config.yml --wait=300s
 EONG
             # Create K8s Pod network
             kubectl apply -f ./k8s/overlay/pod_subnet.yml

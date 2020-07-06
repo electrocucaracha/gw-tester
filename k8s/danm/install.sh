@@ -48,7 +48,7 @@ for id in $(sudo docker ps -q --filter "ancestor=$(sudo docker images --filter=r
     sudo docker cp /tmp/kubeconfig "${id}:/etc/cni/net.d/danm.d/kubeconfig"
 done
 
-rm ./install/deployments.yml 2> /dev/null
+rm -f ./install/deployments.yml 2> /dev/null
 CA_BUNDLE=$(kubectl config view --raw -o jsonpath='{.clusters[0].cluster.certificate-authority-data}')
 export CA_BUNDLE
 envsubst <./install/deployments.yml.tpl > ./install/deployments.yml

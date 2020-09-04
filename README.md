@@ -34,6 +34,25 @@ between different eNodeBs.
   - *PDN Gateway (P-GW):* This is the node that connects between the
 LTE network and the PDN.
 
+### LTE EPC Network Interfaces
+
+* **S1-U:** Interface for S1 user plane data for each bearer between
+the EnodeB and S-GW. Provides non guaranteed data delivery
+of user plane Protocol Data Units (PDUs).
+* **S1-MME:** Responsible for delivering signaling protocols
+between the EnodeB and the MME. Consists of a Stream Control
+Transmission Protocol (SCTP) over IP. The application signaling
+protocol is an S1-AP (Application Protocol).
+* **S11:** Interface defined between the MME and S-GW for EPS
+management.
+* **S5/S8:**: Provides user plane tunneling and tunnel management
+function between the S-GW and P-GW. It enables S-GW to connect to
+multiple P-GWs for providing different IP services to the UE. Also
+used for S-GW relocation associated with the UE mobility. In principle
+S5 and S8 is the same interface, the difference being that S8 is used
+when roaming between different operators while S5 is network internal.
+* **SGi:** Interface is used between P-GW and intranet or internet.
+
 ## Setup
 
 This project uses [Vagrant tool][2] for provisioning Virtual Machines

@@ -9,6 +9,7 @@ ENV APP_ROOT=/opt/gw-tester
 COPY --from=builder /go/bin/sgw ${APP_ROOT}/bin/
 COPY ./sgw_default.yml /etc/gw-tester/sgw.yml
 
+RUN apk --no-cache add curl
 RUN chmod -R u+x ${APP_ROOT} && \
     chmod -R g=u ${APP_ROOT} /etc/gw-tester && \
     chgrp -R 0 ${APP_ROOT}

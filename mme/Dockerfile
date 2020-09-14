@@ -9,6 +9,7 @@ ENV APP_ROOT=/opt/gw-tester
 COPY --from=builder /go/bin/mme ${APP_ROOT}/bin/
 COPY ./mme_default.yml /etc/gw-tester/mme.yml
 
+RUN apk --no-cache add curl jq
 RUN chmod -R u+x ${APP_ROOT} && \
     chmod -R g=u ${APP_ROOT} /etc/gw-tester && \
     chgrp -R 0 ${APP_ROOT}

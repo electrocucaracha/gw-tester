@@ -26,7 +26,7 @@ docker-undeploy-demo:
 docker-logs:
 	for service in pgw sgw mme enb; do \
 		echo "--- $${service} ---"; \
-		container=$$(docker ps --filter "name=docker_$${service}_1*" --format "{{.Names}}"); \
+		container=$$(sudo docker ps --filter "name=docker_$${service}_1*" --format "{{.Names}}"); \
 		sudo docker logs $${container}; \
 	done
 docker-debug:
@@ -43,7 +43,7 @@ k8s-undeploy-demo:
 k8s-logs:
 	for pod in pgw sgw mme enb; do \
 		echo "--- $${pod} ---"; \
-		kubectl logs $${pod} ; \
+		kubectl logs $${pod} -c $${pod} ; \
 	done
 k8s-debug:
 	kubectl logs -f external-client

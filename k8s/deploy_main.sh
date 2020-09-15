@@ -25,7 +25,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
     done
 else
     for pod in pgw sgw; do
-        kubectl apply -f "${pod}.yml"
+        kubectl apply -f "${pod}_${multi_cni}.yml"
         kubectl wait --for=condition=ready pod "$pod" --timeout=120s
     done
 fi
@@ -38,7 +38,7 @@ if [ "$multi_cni" == "multus" ]; then
     PGW_S5C_IP=$(kubectl get pods -l=app.kubernetes.io/name=pgw \
     -o jsonpath='{.items[0].metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' \
     | jq -r '.[] | select(.name=="lte-s5c").ips[0]')
-else
+elif [ "$multi_cni" == "danm" ]; then
     SGW_S11_IP=$(kubectl get pods -l=app.kubernetes.io/name=sgw \
     -o jsonpath='{range .items[0].status.podIPs[*]}{.ip}{"\n"}' \
     | grep "172.22.0")
@@ -53,7 +53,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
     kubectl rollout status deployment/mme
 else
     export SGW_S11_IP PGW_S5C_IP
-    envsubst \$PGW_S5C_IP,\$SGW_S11_IP < mme.yml | kubectl apply -f -
+    envsubst \$PGW_S5C_IP,\$SGW_S11_IP < "mme_${multi_cni}.yml" | kubectl apply -f -
     kubectl wait --for=condition=ready pod mme --timeout=120s
 fi
 
@@ -62,7 +62,7 @@ if [ "$multi_cni" == "multus" ]; then
     MME_S1C_IP=$(kubectl get pods -l=app.kubernetes.io/name=mme \
     -o jsonpath='{.items[0].metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' \
     | jq -r '.[] | select(.name=="lte-s1c").ips[0]')
-else
+elif [ "$multi_cni" == "danm" ]; then
     MME_S1C_IP=$(kubectl get pods -l=app.kubernetes.io/name=mme \
     -o jsonpath='{range .items[0].status.podIPs[*]}{.ip}{"\n"}' \
     | grep "172.21.1")
@@ -73,6 +73,6 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
     kubectl rollout status deployment/enb
 else
     export MME_S1C_IP
-    envsubst \$MME_S1C_IP < enb.yml | kubectl apply -f -
+    envsubst \$MME_S1C_IP < "enb_${multi_cni}.yml" | kubectl apply -f -
     kubectl wait --for=condition=ready pod enb --timeout=120s
 fi

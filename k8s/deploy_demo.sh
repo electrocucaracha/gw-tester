@@ -11,11 +11,26 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-set -o xtrace
+if [[ "${DEBUG:-true}" == "true" ]]; then
+    set -o xtrace
+fi
 
 multi_cni="${MULTI_CNI:-multus}"
 
 ./undeploy_demo.sh
+
+# Deploy SAE-GW helm charts
+if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
+    helm install saegw "./${multi_cni}/charts/saegw/"
+    for chart in pgw sgw; do
+        kubectl rollout status "deployment/saegw-$chart"
+    done
+else
+    for pod in pgw sgw; do
+        kubectl apply -f "${pod}_${multi_cni}.yml"
+        kubectl wait --for=condition=ready pod "$pod" --timeout=120s
+    done
+fi
 
 # Deploy Http server
 if [ "$multi_cni" == "multus" ]; then

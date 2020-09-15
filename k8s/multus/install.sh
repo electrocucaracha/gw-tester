@@ -11,7 +11,9 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-set -o xtrace
+if [[ "${DEBUG:-true}" == "true" ]]; then
+    set -o xtrace
+fi
 
 # Deploy Multus CNI daemonset and CRD
 kubectl apply -f install

@@ -17,6 +17,7 @@ $no_proxy += ",10.0.2.15,10.10.17.4"
 $deployment_type = ENV['DEPLOY'] || "docker"
 $cni_type = ENV['CNI'] || "multus"
 $enable_skydive = ENV['ENABLE_SKYDIVE'] || "false"
+$debug = ENV['DEBUG'] || "false"
 
 Vagrant.configure(2) do |config|
   config.vm.provider :libvirt
@@ -73,7 +74,8 @@ Vagrant.configure(2) do |config|
       'DEPLOYMENT_TYPE': "#{$deployment_type}",
       'MULTI_CNI': "#{$cni_type}",
       'ENABLE_SKYDIVE': "#{$enable_skydive}",
-      'HOST_IP': "10.10.17.4"
+      'HOST_IP': "10.10.17.4",
+      'DEBUG': "#{$debug}"
     }
     sh.inline = <<-SHELL
       set -o pipefail

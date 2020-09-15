@@ -11,26 +11,41 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-set -o xtrace
+if [[ "${DEBUG:-true}" == "true" ]]; then
+    set -o xtrace
+fi
 
 echo "Running deployment process..."
 case ${DEPLOYMENT_TYPE:-docker} in
     docker)
         make docker-deploy-demo
-        sudo docker ps
-        make docker-logs
+        if [[ "${DEBUG:-true}" == "true" ]]; then
+            sudo docker ps
+            make docker-logs
+            sudo docker logs "$(sudo docker ps --filter "name=docker_external_client_1*" --format "{{.Names}}")"
+        fi
     ;;
     k8s)
         if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
             make helm-deploy
-            make helm-logs
-            kubectl get pods -o wide
+            if [[ "${DEBUG:-true}" == "true" ]]; then
+                kubectl get all -o wide
+                make helm-logs
+            fi
             make helm-deploy-demo
+            if [[ "${DEBUG:-true}" == "true" ]]; then
+                kubectl logs external-client -c external-client
+            fi
         else
             make k8s-deploy
-            make k8s-logs
-            kubectl get pods -o wide
+            if [[ "${DEBUG:-true}" == "true" ]]; then
+                kubectl get all -o wide
+                make k8s-logs
+            fi
             make k8s-deploy-demo
+            if [[ "${DEBUG:-true}" == "true" ]]; then
+                kubectl logs external-client -c external-client
+            fi
         fi
     ;;
 esac

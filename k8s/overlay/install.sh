@@ -11,7 +11,9 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-set -o xtrace
+if [[ "${DEBUG:-true}" == "true" ]]; then
+    set -o xtrace
+fi
 
 # Wait for CoreDNS service
 kubectl rollout status deployment/coredns -n kube-system

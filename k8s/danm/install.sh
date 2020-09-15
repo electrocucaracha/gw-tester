@@ -11,7 +11,9 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-set -o xtrace
+if [[ "${DEBUG:-true}" == "true" ]]; then
+    set -o xtrace
+fi
 
 danm_version="v4.2.0"
 

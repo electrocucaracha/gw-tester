@@ -11,7 +11,9 @@
 set -o pipefail
 set -o errexit
 set -o nounset
-set -o xtrace
+if [[ "${DEBUG:-false}" == "true" ]]; then
+    set -o xtrace
+fi
 
 multi_cni="${MULTI_CNI:-multus}"
 

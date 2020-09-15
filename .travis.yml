@@ -40,6 +40,7 @@ jobs:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
       script:
         - ./install.sh
+        - kubectl get all -A -o wide
         - ./deploy.sh
       env:
         - DEPLOYMENT_TYPE=k8s
@@ -48,6 +49,7 @@ jobs:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
       script:
         - ./install.sh
+        - kubectl get all -A -o wide
         - ./deploy.sh
       env:
         - DEPLOYMENT_TYPE=k8s
@@ -57,6 +59,7 @@ jobs:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
       script:
         - ./install.sh
+        - kubectl get all -A -o wide
         - ./deploy.sh
       env:
         - DEPLOYMENT_TYPE=k8s
@@ -66,6 +69,7 @@ jobs:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
       script:
         - ./install.sh
+        - kubectl get all -A -o wide
         - ./deploy.sh
       env:
         - DEPLOYMENT_TYPE=k8s

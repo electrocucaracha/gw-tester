@@ -13,7 +13,25 @@ set -o xtrace
 set -o errexit
 set -o nounset
 
-cni_plugin_version="v0.8.6"
+function get_cpu_arch {
+    if [ -z "${PKG_CPU_ARCH:-}" ]; then
+        case "$(uname -m)" in
+            x86_64)
+                PKG_CPU_ARCH=amd64
+            ;;
+            armv8*)
+                PKG_CPU_ARCH=arm64
+            ;;
+            aarch64*)
+                PKG_CPU_ARCH=arm64
+            ;;
+            armv*)
+                PKG_CPU_ARCH=armv7
+            ;;
+        esac
+    fi
+    echo "$PKG_CPU_ARCH"
+}
 
 function install_deps {
     pkgs=""
@@ -48,7 +66,8 @@ case ${DEPLOYMENT_TYPE:-docker} in
         # Download CNI plugins
         if [ ! -d /opt/containernetworking/plugins ]; then
             pushd "$(mktemp -d)"
-            curl -Lo cni-plugins.tgz "https://github.com/containernetworking/plugins/releases/download/${cni_plugin_version}/cni-plugins-linux-amd64-${cni_plugin_version}.tgz"
+            cni_plugin_version=$(curl -s https://api.github.com/repos/containernetworking/plugins/releases/latest | grep -Po '"tag_name":.*?[^\\]",' | awk -F  "\"" 'NR==1{print $4}')
+            curl -Lo cni-plugins.tgz "https://github.com/containernetworking/plugins/releases/download/${cni_plugin_version}/cni-plugins-$(uname | awk '{print tolower($0)}')-$(get_cpu_arch)-${cni_plugin_version}.tgz"
             sudo mkdir -p /opt/containernetworking/plugins
             sudo chown "$USER" -R /opt/containernetworking/plugins
             tar xvf cni-plugins.tgz -C /opt/containernetworking/plugins

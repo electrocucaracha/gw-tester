@@ -22,6 +22,13 @@ jobs:
         - tox -e lint
         - bash -c 'shopt -s globstar; shellcheck **/*.sh'
         - find k8s -name Chart.yaml -exec dirname {} \; | xargs helm lint
+    - name: Vagrant validation
+      install:
+        - sudo apt update
+        - sudo apt-get install -y -qq -o=Dpkg::Use-Pty=0 --no-install-recommends curl qemu
+        - curl -fsSL http://bit.ly/initVagrant | PROVIDER=libvirt bash
+      script:
+        - ENABLE_SKYDIVE=true sudo -E vagrant up
     - name: Docker validation on Ubuntu 18.04 LTS Bare Metal
       install:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
@@ -45,3 +52,22 @@ jobs:
       env:
         - DEPLOYMENT_TYPE=k8s
         - MULTI_CNI=danm
+    - name: Helm + Multus CNI on Ubuntu 18.04 LTS Bare Metal
+      install:
+        - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
+      script:
+        - ./install.sh
+        - ./deploy.sh
+      env:
+        - DEPLOYMENT_TYPE=k8s
+        - PKG_MGR=helm
+    - name: Helm + DANM CNI on Ubuntu 18.04 LTS Bare Metal
+      install:
+        - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
+      script:
+        - ./install.sh
+        - ./deploy.sh
+      env:
+        - DEPLOYMENT_TYPE=k8s
+        - MULTI_CNI=danm
+        - PKG_MGR=helm

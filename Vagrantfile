@@ -14,7 +14,6 @@ $no_proxy = ENV['NO_PROXY'] || ENV['no_proxy'] || "127.0.0.1,localhost"
   $no_proxy += ",192.168.121.#{i}"
 end
 $no_proxy += ",10.0.2.15,10.10.17.4"
-$socks_proxy = ENV['socks_proxy'] || ENV['SOCKS_PROXY'] || ""
 $deployment_type = ENV['DEPLOY'] || "docker"
 $cni_type = ENV['CNI'] || "multus"
 $enable_skydive = ENV['ENABLE_SKYDIVE'] || "false"
@@ -30,7 +29,7 @@ Vagrant.configure(2) do |config|
   [:virtualbox, :libvirt].each do |provider|
   config.vm.provider provider do |p|
       p.cpus = 2
-      p.memory = 4096
+      p.memory = 6144
     end
   end
 

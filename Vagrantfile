@@ -16,6 +16,7 @@ end
 $no_proxy += ",10.0.2.15,10.10.17.4"
 $deployment_type = ENV['DEPLOY'] || "docker"
 $cni_type = ENV['CNI'] || "multus"
+$pkg_mgr = ENV['MGR'] || "k8s"
 $enable_skydive = ENV['ENABLE_SKYDIVE'] || "false"
 $debug = ENV['DEBUG'] || "false"
 
@@ -73,6 +74,7 @@ Vagrant.configure(2) do |config|
     sh.env = {
       'DEPLOYMENT_TYPE': "#{$deployment_type}",
       'MULTI_CNI': "#{$cni_type}",
+      'PKG_MGR': "#{$pkg_mgr}",
       'ENABLE_SKYDIVE': "#{$enable_skydive}",
       'HOST_IP': "10.10.17.4",
       'DEBUG': "#{$debug}"

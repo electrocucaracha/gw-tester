@@ -17,6 +17,7 @@ fi
 
 multi_cni="${MULTI_CNI:-multus}"
 
+kubectl delete -f etcd.yml --ignore-not-found
 for pod in http-server external-client; do
     kubectl delete -f "${pod}_${multi_cni}.yml" --wait=false --ignore-not-found=true
 done

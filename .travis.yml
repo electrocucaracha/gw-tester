@@ -57,6 +57,16 @@ jobs:
       env:
         - DEPLOYMENT_TYPE=k8s
         - MULTI_CNI=danm
+    - name: Kubernetes + NSM CNI on Ubuntu 18.04 LTS Bare Metal
+      install:
+        - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
+      script:
+        - ./install.sh
+        - kubectl get all -A -o wide
+        - ./deploy.sh
+      env:
+        - DEPLOYMENT_TYPE=k8s
+        - MULTI_CNI=nsm
     - name: Helm + Multus CNI on Ubuntu 18.04 LTS Bare Metal
       install:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash

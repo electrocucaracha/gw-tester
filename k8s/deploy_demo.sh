@@ -19,6 +19,13 @@ multi_cni="${MULTI_CNI:-multus}"
 
 ./undeploy_demo.sh
 
+# Get an IP Cluster
+kubectl apply -f etcd.yml
+
+# Create a etcd datastore and insert flannel entries
+kubectl scale deployment lte-etcd --replicas=1
+kubectl rollout status deployment/lte-etcd --timeout=5m
+
 # Deploy SAE-GW helm charts
 if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
     helm install saegw "./${multi_cni}/charts/saegw/"

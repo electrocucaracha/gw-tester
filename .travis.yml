@@ -35,6 +35,7 @@ jobs:
       script:
         - HOST_IP=$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }') ./install.sh
         - ./deploy.sh
+        - sudo docker logs $(sudo docker ps --filter "name=docker_external_client_1*" --format "{{.Names}}")
     - name: Kubernetes + Multus CNI on Ubuntu 18.04 LTS Bare Metal
       install:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
@@ -42,6 +43,7 @@ jobs:
         - ./install.sh
         - kubectl get all -A -o wide
         - ./deploy.sh
+        - kubectl logs external-client
       env:
         - DEPLOYMENT_TYPE=k8s
     - name: Kubernetes + DANM CNI on Ubuntu 18.04 LTS Bare Metal
@@ -51,6 +53,7 @@ jobs:
         - ./install.sh
         - kubectl get all -A -o wide
         - ./deploy.sh
+        - kubectl logs external-client
       env:
         - DEPLOYMENT_TYPE=k8s
         - MULTI_CNI=danm
@@ -61,6 +64,7 @@ jobs:
         - ./install.sh
         - kubectl get all -A -o wide
         - ./deploy.sh
+        - kubectl logs external-client
       env:
         - DEPLOYMENT_TYPE=k8s
         - PKG_MGR=helm
@@ -71,6 +75,7 @@ jobs:
         - ./install.sh
         - kubectl get all -A -o wide
         - ./deploy.sh
+        - kubectl logs external-client
       env:
         - DEPLOYMENT_TYPE=k8s
         - MULTI_CNI=danm

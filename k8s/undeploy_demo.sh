@@ -23,3 +23,19 @@ done
 for pod in http-server external-client; do
     kubectl wait --for=delete "pod/$pod" --timeout=120s || true
 done
+
+if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
+    for chart in saegw mme enb; do
+        if helm ls | grep "$chart"; then
+            helm uninstall "$chart"
+        fi
+    done
+else
+    for pod in pgw sgw mme enb; do
+        kubectl delete -f "${pod}_${multi_cni}.yml" --wait=false --ignore-not-found=true
+    done
+    for pod in pgw sgw mme enb; do
+        kubectl wait --for=delete "pod/$pod" --timeout=120s || true
+    done
+fi
+

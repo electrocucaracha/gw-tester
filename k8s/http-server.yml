@@ -18,6 +18,8 @@ metadata:
       [
         {"clusterNetwork":"lte-sgi"}
       ]
+  labels:
+    network: pdn
 spec:
   affinity:
     podAffinity:

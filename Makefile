@@ -15,10 +15,6 @@ build:
 pull:
 	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml pull
 
-docker-deploy: docker-undeploy
-	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml up --force-recreate --detach --no-build
-docker-undeploy:
-	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml down --remove-orphans
 docker-deploy-demo: docker-undeploy-demo
 	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml up --force-recreate --detach --no-build
 docker-undeploy-demo:
@@ -32,10 +28,6 @@ docker-logs:
 docker-debug:
 	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml logs --follow external_client
 
-k8s-deploy:
-	cd ./k8s; ./deploy_main.sh
-k8s-undeploy:
-	cd ./k8s; ./undeploy_main.sh
 k8s-deploy-demo:
 	cd ./k8s; ./deploy_demo.sh
 k8s-undeploy-demo:
@@ -53,12 +45,10 @@ k8s-configure:
 		kubectl logs $${pod} -c configure ; \
 	done
 
-helm-deploy:
-	cd ./k8s; PKG_MGR=helm ./deploy_main.sh
-helm-undeploy:
-	cd ./k8s; PKG_MGR=helm ./undeploy_main.sh
-helm-deploy-demo: k8s-deploy-demo
-helm-undeploy-demo: k8s-undeploy-demo
+helm-deploy-demo:
+	cd ./k8s; PKG_MGR=helm ./deploy_demo.sh
+helm-undeploy-demo:
+	cd ./k8s; PKG_MGR=helm ./undeploy_demo.sh
 helm-logs:
 	for deployment in pgw sgw mme enb; do \
 		echo "--- $${deployment} ---"; \

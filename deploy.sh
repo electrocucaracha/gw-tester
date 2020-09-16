@@ -27,23 +27,17 @@ case ${DEPLOYMENT_TYPE:-docker} in
     ;;
     k8s)
         if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
-            make helm-deploy
+            make helm-deploy-demo
             if [[ "${DEBUG:-true}" == "true" ]]; then
                 kubectl get all -o wide
                 make helm-logs
-            fi
-            make helm-deploy-demo
-            if [[ "${DEBUG:-true}" == "true" ]]; then
                 kubectl logs external-client -c external-client
             fi
         else
-            make k8s-deploy
+            make k8s-deploy-demo
             if [[ "${DEBUG:-true}" == "true" ]]; then
                 kubectl get all -o wide
                 make k8s-logs
-            fi
-            make k8s-deploy-demo
-            if [[ "${DEBUG:-true}" == "true" ]]; then
                 kubectl logs external-client -c external-client
             fi
         fi

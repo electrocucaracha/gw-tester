@@ -83,6 +83,9 @@ Vagrant.configure(2) do |config|
       set -o pipefail
       set -o errexit
 
+      echo "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE" | sudo tee --append /etc/environment
+      echo "export MULTI_CNI=$MULTI_CNI" | sudo tee --append /etc/environment
+
       cd /vagrant
       ./install.sh | tee ~/install.log
       ./deploy.sh | tee ~/deploy.log

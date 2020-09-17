@@ -86,7 +86,7 @@ EONG
             kubectl apply -f ./k8s/overlay/pod_subnet.yml
         fi
         for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
-            kubectl wait --for=condition=ready "node/$node" --timeout=120s
+            kubectl wait --for=condition=ready "node/$node" --timeout=5m
         done
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
             kubectl apply -f k8s/skydive.yml

@@ -83,13 +83,13 @@ metadata:
   name: sgw-init-script
 data:
   init.sh: |
-    ip addr
+    ip a
     ip route
 
-    s11_ip=$(ifconfig $(ip addr | grep {{ .Values.s11.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig $(ip addr | grep {{ .Values.s1u.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
-    s5u_ip=$(ifconfig $(ip addr | grep {{ .Values.s5u.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig $(ip addr | grep {{ .Values.s5c.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    s11_ip=$(ifconfig $(ip a | grep {{ .Values.s11.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    s1u_ip=$(ifconfig $(ip a | grep {{ .Values.s1u.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    s5u_ip=$(ifconfig $(ip a | grep {{ .Values.s5u.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    s5c_ip=$(ifconfig $(ip a | grep {{ .Values.s5c.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
 
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml

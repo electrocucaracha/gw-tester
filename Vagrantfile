@@ -88,6 +88,7 @@ Vagrant.configure(2) do |config|
 
       echo "export DEPLOYMENT_TYPE=$DEPLOYMENT_TYPE" | sudo tee --append /etc/environment
       echo "export MULTI_CNI=$MULTI_CNI" | sudo tee --append /etc/environment
+      echo "export PKG_MGR=$PKG_MGR" | sudo tee --append /etc/environment
 
       cd /vagrant
       ./install.sh | tee ~/install.log

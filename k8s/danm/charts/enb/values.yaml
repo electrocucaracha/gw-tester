@@ -16,7 +16,7 @@ s1c:
   container_prefix: s1c
 s1u:
   name: lte-s1u
-  container_prefix: s1c
+  container_prefix: s1u
 
 mme:
   s1c:

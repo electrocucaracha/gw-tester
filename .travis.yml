@@ -28,12 +28,13 @@ jobs:
         - sudo apt-get install -y -qq -o=Dpkg::Use-Pty=0 --no-install-recommends curl qemu
         - curl -fsSL http://bit.ly/initVagrant | PROVIDER=libvirt bash
       script:
-        - ENABLE_SKYDIVE=true sudo -E vagrant up
+        - ENABLE_SKYDIVE=true ENABLE_PORTAINER=true sudo -E vagrant up
     - name: Docker validation on Ubuntu 18.04 LTS Bare Metal
       install:
         - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
       script:
-        - HOST_IP=$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }') ./install.sh
+        - ./install.sh
+        - sudo docker ps
         - ./deploy.sh
         - sudo docker logs $(sudo docker ps --filter "name=docker_external_client_1*" --format "{{.Names}}")
     - name: Kubernetes + Multus CNI on Ubuntu 18.04 LTS Bare Metal

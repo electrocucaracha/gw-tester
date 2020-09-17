@@ -14,11 +14,13 @@ $no_proxy = ENV['NO_PROXY'] || ENV['no_proxy'] || "127.0.0.1,localhost"
   $no_proxy += ",192.168.121.#{i}"
 end
 $no_proxy += ",10.0.2.15,10.10.17.4"
-$deployment_type = ENV['DEPLOY'] || "docker"
-$cni_type = ENV['CNI'] || "multus"
-$pkg_mgr = ENV['MGR'] || "k8s"
-$enable_skydive = ENV['ENABLE_SKYDIVE'] || "false"
+
 $debug = ENV['DEBUG'] || "false"
+$deployment_type = ENV['DEPLOYMENT_TYPE'] || "docker"
+$multi_cni = ENV['MULTI_CNI'] || "multus"
+$pkg_mgr = ENV['PKG_MGR'] || "k8s"
+$enable_skydive = ENV['ENABLE_SKYDIVE'] || "false"
+$enable_portainer = ENV['ENABLE_PORTAINER'] || "false"
 
 Vagrant.configure(2) do |config|
   config.vm.provider :libvirt
@@ -72,12 +74,13 @@ Vagrant.configure(2) do |config|
   # Deploy services
   config.vm.provision 'shell', privileged: false do |sh|
     sh.env = {
+      'DEBUG': "#{$debug}",
       'DEPLOYMENT_TYPE': "#{$deployment_type}",
-      'MULTI_CNI': "#{$cni_type}",
+      'MULTI_CNI': "#{$multi_cni}",
       'PKG_MGR': "#{$pkg_mgr}",
       'ENABLE_SKYDIVE': "#{$enable_skydive}",
-      'HOST_IP': "10.10.17.4",
-      'DEBUG': "#{$debug}"
+      'ENABLE_PORTAINER': "#{$enable_portainer}",
+      'HOST_IP': "10.10.17.4"
     }
     sh.inline = <<-SHELL
       set -o pipefail

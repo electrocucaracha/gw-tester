@@ -53,13 +53,13 @@ case ${DEPLOYMENT_TYPE:-docker} in
     docker)
         install_deps docker-compose
         sudo docker network create --subnet 10.244.0.0/16 --opt com.docker.network.bridge.name=docker_gwbridge docker_gwbridge
-        sudo docker swarm init --advertise-addr "${HOST_IP:-10.0.2.15}"
+        sudo docker swarm init --advertise-addr "${HOST_IP:-$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }')}"
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
             sudo docker-compose --file docker/skydive/docker-compose.yml up --detach
         fi
         if [ "${ENABLE_PORTAINER:-false}" == "true" ]; then
             curl -L https://downloads.portainer.io/portainer-agent-stack.yml -o portainer-agent-stack.yml
-            docker stack deploy --compose-file=portainer-agent-stack.yml portainer
+            sudo docker stack deploy --compose-file=portainer-agent-stack.yml portainer
         fi
         make pull
     ;;

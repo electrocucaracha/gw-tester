@@ -66,7 +66,21 @@ supports two Virtualization providers (Libvirt and VirtualBox).
 Once Vagrant is installed, it's possible to deploy the demo with the
 following instruction:
 
-    DEPLOY=k8s vagrant up
+    DEPLOYMENT_TYPE=k8s MULTI_CNI=danm PKG_MGR=helm vagrant up
+
+
+### Environment variables
+
+| Name             | Default | Options           | Description                                                           |
+|:-----------------|:--------|:------------------|:----------------------------------------------------------------------|
+| DEBUG            | true    | false, true       | Enables verbose execution                                             |
+| DEPLOYMENT_TYPE  | docker  | docker, k8s       | Defines the container orchestrator tool to be used for the deployment |
+| MULTI_CNI        | multus  | multus, danm, nsm | Determines the CNI multiplexer to be used for the deployment          |
+| PKG_MGR          | k8s     | k8s, helm         | Determines the Kubernetes package manager to be used                  |
+| HOST_IP          |         |                   | Local IP address of the host server                                   |
+| PLUGIN_CNI       | flannel | flannel, ipvlan   | Determines the CNI plugin to be used by DANM                          |
+| ENABLE_SKYDIVE   | false   | false, true       | Enables [Skydive](http://skydive.network/) web dashboard              |
+| ENABLE_PORTAINER | false   | false, true       | Enables [Portainer](https://www.portainer.io/) web dashboard          |
 
 ### Post-provision
 

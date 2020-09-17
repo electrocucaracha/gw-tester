@@ -14,6 +14,7 @@ metadata:
   name: sgw
   labels:
     app.kubernetes.io/name: sgw
+    network: epc
 spec:
   serviceAccount: nse-acc
   initContainers:
@@ -112,6 +113,10 @@ data:
     done
     s1u_ip=$(ip route get 172.21.0.0 | awk '{ print $6}')
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    ip a
+    ip route
+    cat /etc/gw-tester/sgw.yml
 
     /opt/gw-tester/bin/sgw -config /etc/gw-tester/sgw.yml
 ---

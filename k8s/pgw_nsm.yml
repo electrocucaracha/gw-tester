@@ -114,6 +114,10 @@ data:
     sgi_if_name=$(ip route get 10.0.1.0 | awk '{ print $4}')
     sed -i "s|sgi_if_name:.*|sgi_if_name: \"${sgi_if_name}\"|g" /etc/gw-tester/pgw.yml
 
+    ip a
+    ip route
+    cat /etc/gw-tester/pgw.yml
+
     /opt/gw-tester/bin/pgw -config /etc/gw-tester/pgw.yml
 ---
 apiVersion: v1

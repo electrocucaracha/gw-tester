@@ -39,8 +39,12 @@ spec:
           mountPath: /etc/gw-tester/
         - name: workdir
           mountPath: /work-dir
-    - name: configure
-      image: electrocucaracha/pgw:0.7.5
+  containers:
+    - image: electrocucaracha/pgw:0.7.5
+      name: pgw
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
       command:
         - "sh"
       args:
@@ -48,16 +52,6 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
-  containers:
-    - image: electrocucaracha/pgw:0.7.5
-      name: pgw
-      securityContext:
-        capabilities:
-          add: ["NET_ADMIN"]
-      command: ["/opt/gw-tester/bin/pgw", "-config", "/etc/gw-tester/pgw.yml"]
-      volumeMounts:
         - name: workdir
           mountPath: /etc/gw-tester
   volumes:
@@ -76,16 +70,18 @@ metadata:
   name: pgw-init-script
 data:
   init.sh: |
-    ip a
-    ip route
-
     s5u_ip=$(ifconfig s5u1 | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig s5c2 | awk '/inet addr/{print substr($2,6)}')
-
-    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/pgw.yml
 
+    s5c_ip=$(ifconfig s5c2 | awk '/inet addr/{print substr($2,6)}')
+    curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip" -XPUT -d value="$s5c_ip" > /dev/null
+    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
+
+    ip a
+    ip route
     cat /etc/gw-tester/pgw.yml
+
+    /opt/gw-tester/bin/pgw -config /etc/gw-tester/pgw.yml
 ---
 apiVersion: v1
 kind: ConfigMap

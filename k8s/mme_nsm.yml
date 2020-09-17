@@ -101,6 +101,10 @@ data:
     curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip" -XPUT -d value="$s1c_ip" > /dev/null
     sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
 
+    ip a
+    ip route
+    cat /etc/gw-tester/mme.yml
+
     /opt/gw-tester/bin/mme -config /etc/gw-tester/mme.yml
 ---
 apiVersion: v1

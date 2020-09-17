@@ -130,6 +130,10 @@ data:
         reattach_on_reload: false
     EOL
 
+    ip a
+    ip route
+    cat /etc/gw-tester/enb.yml
+
     /opt/gw-tester/bin/enb -config /etc/gw-tester/enb.yml
 ---
 apiVersion: v1

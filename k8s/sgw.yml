@@ -41,8 +41,12 @@ spec:
           mountPath: /etc/gw-tester/
         - name: workdir
           mountPath: /work-dir
-    - name: configure
-      image: electrocucaracha/sgw:0.7.5
+  containers:
+    - image: electrocucaracha/sgw:0.7.5
+      name: sgw
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
       command:
         - "sh"
       args:
@@ -50,16 +54,6 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
-  containers:
-    - image: electrocucaracha/sgw:0.7.5
-      name: sgw
-      securityContext:
-        capabilities:
-          add: ["NET_ADMIN"]
-      command: ["/opt/gw-tester/bin/sgw", "-config", "/etc/gw-tester/sgw.yml"]
-      volumeMounts:
         - name: workdir
           mountPath: /etc/gw-tester
   volumes:
@@ -78,20 +72,24 @@ metadata:
   name: sgw-init-script
 data:
   init.sh: |
-    ip a
-    ip route
-
-    s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig s1u2 | awk '/inet addr/{print substr($2,6)}')
     s5u_ip=$(ifconfig s5u3 | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig s5c4 | awk '/inet addr/{print substr($2,6)}')
-
-    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
-    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml
-    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/sgw.yml
 
+    s5c_ip=$(ifconfig s5c4 | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
+    curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/sgw_s11_ip" -XPUT -d value="$s11_ip" > /dev/null
+    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    s1u_ip=$(ifconfig s1u2 | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    ip a
+    ip route
     cat /etc/gw-tester/sgw.yml
+
+    /opt/gw-tester/bin/sgw -config /etc/gw-tester/sgw.yml
 ---
 apiVersion: v1
 kind: ConfigMap

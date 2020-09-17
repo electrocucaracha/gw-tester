@@ -43,17 +43,6 @@ spec:
               mountPath: /etc/gw-tester/
             - name: workdir
               mountPath: /work-dir
-        - name: configure
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          command:
-            - "sh"
-          args:
-            - "/opt/gw-tester/script/init.sh"
-          volumeMounts:
-            - name: init-script
-              mountPath: /opt/gw-tester/script
-            - name: workdir
-              mountPath: /etc/gw-tester
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -61,8 +50,13 @@ spec:
               add: ["NET_ADMIN"]
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/opt/gw-tester/bin/pgw", "-config", "/etc/gw-tester/pgw.yml"]
+          command:
+            - "sh"
+          args:
+            - "/opt/gw-tester/script/init.sh"
           volumeMounts:
+            - name: init-script
+              mountPath: /opt/gw-tester/script
             - name: workdir
               mountPath: /etc/gw-tester
       volumes:
@@ -81,16 +75,18 @@ metadata:
   name: pgw-init-script
 data:
   init.sh: |
-    ip a
-    ip route
-
     s5u_ip=$(ifconfig {{ .Values.s5u.interface }} | awk '/inet addr/{print substr($2,6)}')
-    s5c_ip=$(ifconfig {{ .Values.s5c.interface }} | awk '/inet addr/{print substr($2,6)}')
-
-    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/pgw.yml
 
+    s5c_ip=$(ifconfig {{ .Values.s5c.interface }} | awk '/inet addr/{print substr($2,6)}')
+    curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip" -XPUT -d value="$s5c_ip" > /dev/null
+    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
+
+    ip a
+    ip route
     cat /etc/gw-tester/pgw.yml
+
+    /opt/gw-tester/bin/pgw -config /etc/gw-tester/pgw.yml
 ---
 apiVersion: v1
 kind: ConfigMap

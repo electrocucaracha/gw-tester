@@ -15,13 +15,6 @@ s1c:
   name: lte-s1c
   container_prefix: s1c
 
-sgw:
-  s11:
-    ip: 172.22.0.13
-pgw:
-  s5c:
-    ip: 172.25.1.14
-
 replicaCount: 1
 
 image:

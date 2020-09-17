@@ -43,13 +43,10 @@ spec:
               mountPath: /etc/gw-tester/
             - name: workdir
               mountPath: /work-dir
-        - name: configure
+      containers:
+        - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          env:
-            - name: sgw_s11_ip
-              value: {{ .Values.sgw.s11.ip }}
-            - name: pgw_s5c_ip
-              value: {{ .Values.pgw.s5c.ip }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
           command:
             - "sh"
           args:
@@ -57,14 +54,6 @@ spec:
           volumeMounts:
             - name: init-script
               mountPath: /opt/gw-tester/script
-            - name: workdir
-              mountPath: /etc/gw-tester
-      containers:
-        - name: {{ .Chart.Name }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/opt/gw-tester/bin/mme", "-config", "/etc/gw-tester/mme.yml"]
-          volumeMounts:
             - name: workdir
               mountPath: /etc/gw-tester
       volumes:
@@ -83,19 +72,32 @@ metadata:
   name: mme-init-script
 data:
   init.sh: |
-    ip a
-    ip route
-
-    s11_ip=$(ifconfig $(ip a | grep {{ .Values.s11.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
-    s1c_ip=$(ifconfig $(ip a | grep {{ .Values.s1c.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
-
-    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
-    sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
-
-    sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$sgw_s11_ip\"|g" /etc/gw-tester/mme.yml
+    if [ $(curl ${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
+        pgw_s5c_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip | jq  -r ".node.value")
+    else
+        pgw_s5c_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip?wait=true | jq  -r ".node.value")
+    fi
     sed -i "s|pgw_s5c_ip:.*|pgw_s5c_ip: \"$pgw_s5c_ip\"|g" /etc/gw-tester/mme.yml
 
+    if [ $(curl ${LTE_ETCD_PORT/tcp/http}/v2/keys/sgw_s11_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
+        sgw_s11_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/sgw_s11_ip | jq  -r ".node.value")
+    else
+        sgw_s11_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/sgw_s11_ip?wait=true | jq  -r ".node.value")
+    fi
+    sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$sgw_s11_ip\"|g" /etc/gw-tester/mme.yml
+
+    s11_ip=$(ifconfig $(ip a | grep {{ .Values.s11.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|  s11_ip:.*|  s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
+
+    s1c_ip=$(ifconfig $(ip a | grep {{ .Values.s1c.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')
+    curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip" -XPUT -d value="$s1c_ip" > /dev/null
+    sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
+
+    ip a
+    ip route
     cat /etc/gw-tester/mme.yml
+
+    /opt/gw-tester/bin/mme -config /etc/gw-tester/mme.yml
 ---
 apiVersion: v1
 kind: ConfigMap

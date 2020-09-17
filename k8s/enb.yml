@@ -49,11 +49,12 @@ spec:
           mountPath: /etc/gw-tester/
         - name: workdir
           mountPath: /work-dir
-    - name: configure
-      image: electrocucaracha/enb:0.7.5
-      env:
-        - name: mme_s11_addr
-          value: ${MME_S1C_IP}:36412
+  containers:
+    - image: electrocucaracha/enb:0.7.5
+      name: enb
+      securityContext:
+        capabilities:
+          add: ["NET_ADMIN"]
       command:
         - "sh"
       args:
@@ -61,16 +62,6 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
-  containers:
-    - image: electrocucaracha/enb:0.7.5
-      name: enb
-      securityContext:
-        capabilities:
-          add: ["NET_ADMIN"]
-      command: ["/opt/gw-tester/bin/enb", "-config", "/etc/gw-tester/enb.yml"]
-      volumeMounts:
         - name: workdir
           mountPath: /etc/gw-tester
   volumes:
@@ -89,16 +80,19 @@ metadata:
   name: enb-init-script
 data:
   init.sh: |2
-    ip a
-    ip route
+    if [ $(curl ${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
+        mme_s1c_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip | jq  -r ".node.value")
+    else
+        mme_s1c_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip?wait=true | jq  -r ".node.value")
+    fi
+    sed -i "s|mme_addr:.*|mme_addr: \"${mme_s1c_ip}:36412\"|g" /etc/gw-tester/enb.yml
 
     euu_ip=$(ifconfig euu1 | awk '/inet addr/{print substr($2,6)}')
     s1c_ip=$(ifconfig s1c2 | awk '/inet addr/{print substr($2,6)}')
-    s1u_ip=$(ifconfig s1u3 | awk '/inet addr/{print substr($2,6)}')
-
     sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
+    s1u_ip=$(ifconfig s1u3 | awk '/inet addr/{print substr($2,6)}')
     sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
-    sed -i "s|mme_addr:.*|mme_addr: \"${mme_s11_addr}\"|g" /etc/gw-tester/enb.yml
+
     for i in $(seq 2 254); do
         if [ "10.0.3.$i" != "$euu_ip" ]; then
             format_num=$(printf "%03i" $i)
@@ -116,7 +110,11 @@ data:
         fi
     done
 
+    ip a
+    ip route
     cat /etc/gw-tester/enb.yml
+
+    /opt/gw-tester/bin/enb -config /etc/gw-tester/enb.yml
 ---
 apiVersion: v1
 kind: ConfigMap

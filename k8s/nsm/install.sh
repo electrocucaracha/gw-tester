@@ -26,7 +26,7 @@ if ! helm ls | grep -e nsm; then
 fi
 for daemonset in $(kubectl get daemonset | grep nsm | awk '{print $1}'); do
     echo "Waiting for $daemonset to successfully rolled out"
-    if ! kubectl rollout status "daemonset/$daemonset" --timeout=5m > /dev/null; then
+    if ! kubectl rollout status "daemonset/$daemonset" --timeout=3m > /dev/null; then
         echo "The $daemonset daemonset has not started properly"
         exit 1
     fi
@@ -37,6 +37,8 @@ if [ -z "$(sudo docker images nse:v0.2.0 -q)" ]; then
     newgrp docker <<EONG
 docker build -t nse:v0.2.0 --compress .
 docker image prune --force
+docker pull networkservicemesh/nsm-init:v0.2.0
+kind load docker-image networkservicemesh/nsm-init:v0.2.0 --name k8s
 EONG
     popd
 fi

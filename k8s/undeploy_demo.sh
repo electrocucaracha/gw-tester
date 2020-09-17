@@ -22,7 +22,7 @@ for pod in http-server external-client; do
     kubectl delete -f "${pod}_${multi_cni}.yml" --wait=false --ignore-not-found=true
 done
 for pod in http-server external-client; do
-    kubectl wait --for=delete "pod/$pod" --timeout=5m || true
+    kubectl wait --for=delete "pod/$pod" --timeout=3m || true
 done
 
 if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
@@ -36,7 +36,7 @@ else
         kubectl delete -f "${pod}_${multi_cni}.yml" --wait=false --ignore-not-found=true
     done
     for pod in pgw sgw mme enb; do
-        kubectl wait --for=delete "pod/$pod" --timeout=5m || true
+        kubectl wait --for=delete "pod/$pod" --timeout=3m || true
     done
 fi
 

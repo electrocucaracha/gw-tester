@@ -37,7 +37,7 @@ kubectl apply -f etcd.yml
 
 # Create a etcd datastore and insert flannel entries
 kubectl scale deployment lte-etcd --replicas=1
-kubectl rollout status deployment/lte-etcd --timeout=5m
+kubectl rollout status deployment/lte-etcd --timeout=3m
 
 # Deploy SAE-GW helm charts
 if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
@@ -48,7 +48,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
 else
     for pod in pgw sgw; do
         kubectl apply -f "${pod}_${multi_cni}.yml"
-        kubectl wait --for=condition=ready pod "$pod" --timeout=5m
+        kubectl wait --for=condition=ready pod "$pod" --timeout=3m
     done
 fi
 
@@ -88,7 +88,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
 else
     export SGW_S11_IP PGW_S5C_IP
     envsubst \$PGW_S5C_IP,\$SGW_S11_IP < "mme_${multi_cni}.yml" | kubectl apply -f -
-    kubectl wait --for=condition=ready pod mme --timeout=5m
+    kubectl wait --for=condition=ready pod mme --timeout=3m
 fi
 
 # Deploy eNB service
@@ -108,7 +108,7 @@ if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
 else
     export MME_S1C_IP
     envsubst \$MME_S1C_IP < "enb_${multi_cni}.yml" | kubectl apply -f -
-    kubectl wait --for=condition=ready pod enb --timeout=5m
+    kubectl wait --for=condition=ready pod enb --timeout=3m
 fi
 
 # Deploy External client

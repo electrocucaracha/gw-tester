@@ -15,6 +15,12 @@ if [[ "${DEBUG:-true}" == "true" ]]; then
     set -o xtrace
 fi
 
+# Load the ETCD image to local regitstry
+newgrp docker <<EONG
+docker pull nfvpe/multus:v3.4
+kind load docker-image nfvpe/multus:v3.4 --name k8s
+EONG
+
 # Deploy Multus CNI daemonset and CRD
 kubectl apply -f install
 

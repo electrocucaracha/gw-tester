@@ -12,7 +12,7 @@ build:
 		sudo docker buildx build --platform linux/amd64,linux/arm64 -t electrocucaracha/$$image:0.7.5 --push --file $$image/Dockerfile $$image ; \
 	done
 	sudo docker image prune --force
-pull:
+docker-pull:
 	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml pull
 
 docker-deploy-demo: docker-undeploy-demo
@@ -28,6 +28,11 @@ docker-logs:
 docker-debug:
 	sudo $$(command -v docker-compose) --file docker/main.yml --file docker/overlay.yml --file docker/demo.yml logs --follow external_client
 
+k8s-pull:
+	for img in pgw sgw mme enb; do \
+		sudo docker pull electrocucaracha/$${img}:0.7.5 ;\
+		sudo kind load docker-image electrocucaracha/$${img}:0.7.5 --name k8s;\
+	done
 k8s-deploy-demo:
 	cd ./k8s; ./deploy_demo.sh
 k8s-undeploy-demo:

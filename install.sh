@@ -61,7 +61,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
             curl -L https://downloads.portainer.io/portainer-agent-stack.yml -o portainer-agent-stack.yml
             sudo docker stack deploy --compose-file=portainer-agent-stack.yml portainer
         fi
-        make pull
+        make docker-pull
     ;;
     k8s)
         install_deps kind kubectl jq helm
@@ -81,12 +81,14 @@ case ${DEPLOYMENT_TYPE:-docker} in
         if ! sudo "$(command -v kind)" get clusters | grep -e k8s; then
             newgrp docker <<EONG
             kind create cluster --name k8s --config=./k8s/kind-config.yml --wait=300s
+            docker pull quay.io/coreos/flannel:v0.12.0-amd64
+            kind load docker-image quay.io/coreos/flannel:v0.12.0-amd64 --name k8s
 EONG
             # Create K8s Pod network
             kubectl apply -f ./k8s/overlay/pod_subnet.yml
         fi
         for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
-            kubectl wait --for=condition=ready "node/$node" --timeout=5m
+            kubectl wait --for=condition=ready "node/$node" --timeout=3m
         done
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
             kubectl apply -f k8s/skydive.yml
@@ -106,5 +108,6 @@ EONG
         for daemonset in $(kubectl get daemonset -n kube-system -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
             kubectl rollout status "daemonset/$daemonset" -n kube-system
         done
+        make k8s-pull
     ;;
 esac

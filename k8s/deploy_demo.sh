@@ -17,6 +17,19 @@ fi
 
 multi_cni="${MULTI_CNI:-multus}"
 
+exit_trap() {
+    printf "CPU usage: "
+    grep 'cpu ' /proc/stat | awk '{usage=($2+$4)*100/($2+$4+$5)} END {print usage " %"}'
+    printf "Memory free(Kb):"
+    awk -v low="$(grep low /proc/zoneinfo | awk '{k+=$2}END{print k}')" '{a[$1]=$2}  END{ print a["MemFree:"]+a["Active(file):"]+a["Inactive(file):"]+a["SReclaimable:"]-(12*low);}' /proc/meminfo
+    echo "Environment variables:"
+    printenv
+    echo "Kubernetes Resources:"
+    kubectl get all -A -o wide
+}
+
+trap exit_trap ERR
+
 ./undeploy_demo.sh
 
 # Get an IP Cluster
@@ -118,3 +131,5 @@ fi
 export ENB_EUU_IP HTTP_SERVER_SGI_IP
 envsubst \$ENB_EUU_IP,\$HTTP_SERVER_SGI_IP < "external-client_${multi_cni}.yml" | kubectl apply -f -
 kubectl wait --for=condition=ready pod external-client
+
+trap ERR

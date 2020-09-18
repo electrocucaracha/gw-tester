@@ -26,7 +26,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
         fi
     ;;
     k8s)
-        if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
+        if [ "${PKG_MGR:-k8s}" == "helm" ]; then
             make helm-deploy-demo
             if [[ "${DEBUG:-true}" == "true" ]]; then
                 kubectl get all -o wide

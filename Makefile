@@ -34,9 +34,9 @@ k8s-pull:
 		sudo kind load docker-image electrocucaracha/$${img}:0.7.5 --name k8s;\
 	done
 k8s-deploy-demo:
-	cd ./k8s; ./deploy_demo.sh
+	cd ./k8s; PKG_MGR=k8s ./deploy_demo.sh
 k8s-undeploy-demo:
-	cd ./k8s; ./undeploy_demo.sh
+	cd ./k8s; PKG_MGR=k8s ./undeploy_demo.sh
 k8s-logs:
 	for pod in pgw sgw mme enb; do \
 		echo "--- $${pod} ---"; \

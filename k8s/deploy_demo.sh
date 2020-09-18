@@ -42,7 +42,7 @@ kubectl apply -f etcd.yml
 kubectl scale deployment lte-etcd --replicas=1
 kubectl rollout status deployment/lte-etcd --timeout=3m
 
-if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
+if [ "${PKG_MGR:-k8s}" == "helm" ]; then
     for chart in saegw mme enb; do
         helm install "$chart" "./${multi_cni}/charts/$chart/"
     done

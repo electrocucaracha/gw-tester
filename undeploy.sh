@@ -18,12 +18,10 @@ case ${DEPLOYMENT_TYPE:-docker} in
         make docker-undeploy-demo
     ;;
     k8s)
-        if [ -n "${PKG_MGR:-}" ] && [ "${PKG_MGR:-}" == "helm" ]; then
+        if [ "${PKG_MGR:-k8s}" == "helm" ]; then
             make helm-undeploy-demo
-            make helm-undeploy
         else
             make k8s-undeploy-demo
-            make k8s-undeploy
         fi
     ;;
 esac

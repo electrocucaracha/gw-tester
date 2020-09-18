@@ -32,15 +32,6 @@ metadata:
     app.kubernetes.io/name: sgw
     network: epc
 spec:
-  initContainers:
-    - name: install
-      image: electrocucaracha/sgw:0.7.5
-      command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
-      volumeMounts:
-        - name: config
-          mountPath: /etc/gw-tester/
-        - name: workdir
-          mountPath: /work-dir
   containers:
     - image: electrocucaracha/sgw:0.7.5
       name: sgw
@@ -54,17 +45,10 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
         name: sgw-init-script
-    - name: workdir
-      emptyDir: {}
-    - name: config
-      configMap:
-        name: sgw-config
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -72,9 +56,15 @@ metadata:
   name: sgw-init-script
 data:
   init.sh: |
+    until ip add show s5u3 > /dev/null ; do
+        sleep 2
+    done
     s5u_ip=$(ifconfig s5u3 | awk '/inet addr/{print substr($2,6)}')
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/sgw.yml
 
+    until ip add show s5c4 > /dev/null ; do
+        sleep 2
+    done
     s5c_ip=$(ifconfig s5c4 | awk '/inet addr/{print substr($2,6)}')
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
 
@@ -90,15 +80,3 @@ data:
     cat /etc/gw-tester/sgw.yml
 
     /opt/gw-tester/bin/sgw -config /etc/gw-tester/sgw.yml
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: sgw-config
-data:
-  sgw.yml: |
-    local_addresses:
-      s11_ip: "172.22.0.13"
-      s1u_ip: "172.21.0.13"
-      s5c_ip: "172.25.1.13"
-      s5u_ip: "172.25.0.13"

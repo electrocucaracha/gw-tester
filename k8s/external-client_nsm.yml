@@ -50,13 +50,6 @@ metadata:
   name: external-client-init-script
 data:
   init.sh: |
-    set -o xtrace
-    until ip add show euu1; do
-        sleep 2
-    done
-    euu_ip=$(ifconfig euu1 | awk '/inet addr/{print substr($2,6)}')
-    curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/src_ip" -XPUT -d value="$euu_ip"
-
     while true; do
         curl --connect-timeout 5 ${http_server_sgi_ip}
         sleep 30

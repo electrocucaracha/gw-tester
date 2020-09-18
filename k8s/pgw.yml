@@ -30,15 +30,6 @@ metadata:
     app.kubernetes.io/name: pgw
     network: pdn
 spec:
-  initContainers:
-    - name: install
-      image: electrocucaracha/pgw:0.7.5
-      command: ["cp", "/etc/gw-tester/pgw.yml", "/work-dir/pgw.yml"]
-      volumeMounts:
-        - name: config
-          mountPath: /etc/gw-tester/
-        - name: workdir
-          mountPath: /work-dir
   containers:
     - image: electrocucaracha/pgw:0.7.5
       name: pgw
@@ -52,17 +43,10 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
         name: pgw-init-script
-    - name: workdir
-      emptyDir: {}
-    - name: config
-      configMap:
-        name: pgw-config
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -77,20 +61,11 @@ data:
     curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip" -XPUT -d value="$s5c_ip" > /dev/null
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
 
+    sgi_if_name="sgi3"
+    sed -i "s|sgi_if_name:.*|sgi_if_name: \"${sgi_if_name}\"|g" /etc/gw-tester/pgw.yml
+
     ip a
     ip route
     cat /etc/gw-tester/pgw.yml
 
     /opt/gw-tester/bin/pgw -config /etc/gw-tester/pgw.yml
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: pgw-config
-data:
-  pgw.yml: |
-    local_addresses:
-      s5c_ip: "172.25.1.14"
-      s5u_ip: "172.25.0.14"
-    sgi_if_name: "sgi3"
-    route_subnet: "10.0.1.0/24"

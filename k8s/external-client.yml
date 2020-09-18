@@ -63,7 +63,6 @@ metadata:
   name: external-client-init-script
 data:
   init.sh: |
-    set -o xtrace
     while true; do
         curl --connect-timeout 5 ${http_server_sgi_ip}
         sleep 30

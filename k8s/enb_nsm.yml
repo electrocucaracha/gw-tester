@@ -12,6 +12,8 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: enb
+  annotations:
+    ns.networkservicemesh.io: lte-network/s1c2?link=s1c,lte-network/s1u3?link=s1u
   labels:
     app.kubernetes.io/name: enb
     network: e-utran
@@ -27,23 +29,6 @@ spec:
                 values:
                   - pdn
           topologyKey: "kubernetes.io/hostname"
-  initContainers:
-    - name: install
-      image: electrocucaracha/enb:0.7.5
-      command: ["cp", "/etc/gw-tester/enb.yml", "/work-dir/enb.yml"]
-      volumeMounts:
-        - name: config
-          mountPath: /etc/gw-tester/
-        - name: workdir
-          mountPath: /work-dir
-    - name: nsm-init-container
-      image: networkservicemesh/nsm-init:v0.2.0
-      env:
-        - name: NS_NETWORKSERVICEMESH_IO
-          value: lte-network/s1c2?link=s1c,lte-network/s1u3?link=s1u
-      resources:
-        limits:
-          networkservicemesh.io/socket: 1
   containers:
     - name: sidecar-euu
       image: nse:v0.2.0
@@ -71,17 +56,10 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
         name: enb-init-script
-    - name: workdir
-      emptyDir: {}
-    - name: config
-      configMap:
-        name: enb-config
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -100,56 +78,48 @@ data:
         sleep 2
     done
     s1c_ip=$(ifconfig s1c2 | awk '/inet addr/{print substr($2,6)}')
-    sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
+    sed -i "s|  s1c_ip:.*|  s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
 
     until ip add show s1u3 > /dev/null ; do
         sleep 2
     done
     s1u_ip=$(ifconfig s1u3 | awk '/inet addr/{print substr($2,6)}')
-    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
+    sed -i "s|  s1u_ip:.*|  s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
 
-    if [ $(curl ${LTE_ETCD_PORT/tcp/http}/v2/keys/src_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
-        src_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/src_ip | jq  -r ".node.value")
-    else
-        src_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/src_ip?wait=true | jq  -r ".node.value")
-    fi
     until ip route get 10.0.3.0 | grep -q nsm; do
         sleep 2
     done
     euu_if=$(ip route get 10.0.3.0 | awk '{ print $4}')
-
-    cat <<EOL >> /etc/gw-tester/enb.yml
+    sed -i '/subscribers:/,$d' /etc/gw-tester/enb.yml
+    echo "subscribers:" >> /etc/gw-tester/enb.yml
+    euu_ip=$(ifconfig $euu_if | awk '/inet addr/{print substr($2,6)}')
+    for i in $(seq 0 254); do
+        if [ "10.0.3.$i" != "$euu_ip" ]; then
+            format_num=$(printf "%03i" $i)
+            cat <<EOL >> /etc/gw-tester/enb.yml
       - imsi: "00101000000000$format_num"
         msisdn: "81400000000$format_num"
         imeisv: "123450000000$format_num"
-        src_ip: "$src_ip"
+        src_ip: "10.0.3.$i"
         i_tei: 0
         type: "external"
         euu_if_name: "$euu_if"
         http_url: ""
         reattach_on_reload: false
     EOL
+        fi
+    done
 
     ip a
     ip route
     cat /etc/gw-tester/enb.yml
 
+    if [ $(curl ${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip -s -o /dev/null -w "%{http_code}") != "200" ]; then
+        curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/pgw_s5c_ip?wait=true
+    fi  
+
+    if [ $(curl ${LTE_ETCD_PORT/tcp/http}/v2/keys/sgw_s11_ip -s -o /dev/null -w "%{http_code}") != "200" ]; then
+        curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/sgw_s11_ip?wait=true
+    fi  
+
     /opt/gw-tester/bin/enb -config /etc/gw-tester/enb.yml
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: enb-config
-data:
-  enb.yml: |
-    mcc: "001"
-    mnc: "01"
-    rat_type: 6 # E-UTRAN
-    tai: 0x0001
-    eci: 0x00000001
-    local_addresses:
-      s1c_ip: "172.21.1.11"
-      s1u_ip: "172.21.0.11"
-    mme_addr: "172.21.1.12:36412"
-    prom_addr:
-    subscribers:

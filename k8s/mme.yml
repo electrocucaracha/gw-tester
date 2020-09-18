@@ -28,15 +28,6 @@ metadata:
     app.kubernetes.io/name: mme
     network: epc
 spec:
-  initContainers:
-    - name: install
-      image: electrocucaracha/mme:0.7.5
-      command: ["cp", "/etc/gw-tester/mme.yml", "/work-dir/mme.yml"]
-      volumeMounts:
-        - name: config
-          mountPath: /etc/gw-tester/
-        - name: workdir
-          mountPath: /work-dir
   containers:
     - image: electrocucaracha/mme:0.7.5
       name: mme
@@ -47,17 +38,10 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
         name: mme-init-script
-    - name: workdir
-      emptyDir: {}
-    - name: config
-      configMap:
-        name: mme-config
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -79,30 +63,18 @@ data:
     fi
     sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$sgw_s11_ip\"|g" /etc/gw-tester/mme.yml
 
+    until ip add show s111 > /dev/null ; do
+        sleep 2
+    done
     s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
     sed -i "s|  s11_ip:.*|  s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
 
     s1c_ip=$(ifconfig s1c2 | awk '/inet addr/{print substr($2,6)}')
     curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip" -XPUT -d value="$s1c_ip" > /dev/null
-    sed -i "s|s1c_addr:.*|s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
+    sed -i "s|  s1c_addr:.*|  s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
 
     ip a
     ip route
     cat /etc/gw-tester/mme.yml
 
     /opt/gw-tester/bin/mme -config /etc/gw-tester/mme.yml
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mme-config
-data:
-  mme.yml: |
-    mcc: "001"
-    mnc: "01"
-    apn: "gw-tester.go-gtp.example"
-    local_addresses:
-      s1c_addr: "172.21.1.12:36412"
-      s11_ip: "172.22.0.12"
-    sgw_s11_ip: "172.22.0.13"
-    pgw_s5c_ip: "172.25.1.14"

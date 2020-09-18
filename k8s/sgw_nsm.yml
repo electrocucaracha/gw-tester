@@ -12,28 +12,13 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: sgw
+  annotations:
+    ns.networkservicemesh.io: lte-network/s5u3?link=s5u,lte-network/s5c4?link=s5c
   labels:
     app.kubernetes.io/name: sgw
     network: epc
 spec:
   serviceAccount: nse-acc
-  initContainers:
-    - name: install
-      image: electrocucaracha/sgw:0.7.5
-      command: ["cp", "/etc/gw-tester/sgw.yml", "/work-dir/sgw.yml"]
-      volumeMounts:
-        - name: config
-          mountPath: /etc/gw-tester/
-        - name: workdir
-          mountPath: /work-dir
-    - name: nsm-init-container
-      image: networkservicemesh/nsm-init:v0.2.0
-      env:
-        - name: NS_NETWORKSERVICEMESH_IO
-          value: lte-network/s5u3?link=s5u,lte-network/s5c4?link=s5c
-      resources:
-        limits:
-          networkservicemesh.io/socket: 1
   containers:
     - name: sidecar-s1u
       image: nse:v0.2.0
@@ -71,17 +56,10 @@ spec:
       volumeMounts:
         - name: init-script
           mountPath: /opt/gw-tester/script
-        - name: workdir
-          mountPath: /etc/gw-tester
   volumes:
     - name: init-script
       configMap:
         name: sgw-init-script
-    - name: workdir
-      emptyDir: {}
-    - name: config
-      configMap:
-        name: sgw-config
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -119,15 +97,3 @@ data:
     cat /etc/gw-tester/sgw.yml
 
     /opt/gw-tester/bin/sgw -config /etc/gw-tester/sgw.yml
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: sgw-config
-data:
-  sgw.yml: |
-    local_addresses:
-      s11_ip: "172.22.0.13"
-      s1u_ip: "172.21.0.13"
-      s5c_ip: "172.25.1.13"
-      s5u_ip: "172.25.0.13"

@@ -85,10 +85,10 @@ metadata:
   name: enb-init-script
 data:
   init.sh: |2
-    if [ $(curl ${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
-        mme_s1c_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip | jq  -r ".node.value")
+    if [ $(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
+        mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip | jq  -r ".node.value")
     else
-        mme_s1c_ip=$(curl -s ${LTE_ETCD_PORT/tcp/http}/v2/keys/mme_s1c_ip?wait=true | jq  -r ".node.value")
+        mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip?wait=true | jq  -r ".node.value")
     fi
     sed -i "s|mme_addr:.*|mme_addr: \"${mme_s1c_ip}:36412\"|g" /etc/gw-tester/enb.yml
 

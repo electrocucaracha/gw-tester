@@ -37,9 +37,6 @@ trap exit_trap ERR
 
 # Get an IP Cluster
 kubectl apply -f etcd.yml
-
-# Create a etcd datastore and insert flannel entries
-kubectl scale deployment lte-etcd --replicas=1
 kubectl rollout status deployment/lte-etcd --timeout=3m
 
 if [ "${PKG_MGR:-k8s}" == "helm" ]; then

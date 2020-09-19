@@ -69,7 +69,7 @@ data:
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
 
     s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
-    curl -s "${LTE_ETCD_PORT/tcp/http}/v2/keys/sgw_s11_ip" -XPUT -d value="$s11_ip" > /dev/null
+    curl -s "http://lte-etcd.default.svc.cluster.local:12379/v2/keys/sgw_s11_ip" -XPUT -d value="$s11_ip" > /dev/null
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
 
     s1u_ip=$(ifconfig s1u2 | awk '/inet addr/{print substr($2,6)}')

@@ -14,13 +14,13 @@ metadata:
   name: pod-subnet
   namespace: kube-system
 spec:
-  NetworkID: flannel
-  NetworkType: flannel
+  NetworkID: kindnet
+  NetworkType: ptp
 ---
 apiVersion: danm.k8s.io/v1
 kind: ClusterNetwork
 metadata:
   name: default
 spec:
-  NetworkID: flannel
-  NetworkType: flannel
+  NetworkID: kindnet
+  NetworkType: ptp

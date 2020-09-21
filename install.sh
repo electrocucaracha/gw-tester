@@ -84,21 +84,34 @@ case ${DEPLOYMENT_TYPE:-docker} in
             docker pull quay.io/coreos/flannel:v0.12.0-amd64
             kind load docker-image quay.io/coreos/flannel:v0.12.0-amd64 --name k8s
 EONG
-            # Create K8s Pod network
-            kubectl apply -f ./k8s/overlay/pod_subnet.yml
         fi
         for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
             kubectl wait --for=condition=ready "node/$node" --timeout=3m
         done
+
+        # NOTE: DANM does not support chaining together multiple CNI plugin
+        if [ "${MULTI_CNI:-multus}" == "danm" ]; then
+            newgrp docker << "EONG"
+            for container in $(docker ps -q --filter ancestor=kindest/node:v1.18.2); do
+            docker cp $container:/etc/cni/net.d/10-kindnet.conflist /tmp/10-kindnet.conflist
+            jq '. | { name: .name, cniVersion: .cniVersion, type: .plugins[0].type, ipMasq: .plugins[0].ipMasq, ipam: .plugins[0].ipam }' /tmp/10-kindnet.conflist > /tmp/kindnet.conf
+            docker cp /tmp/kindnet.conf $container:/etc/cni/net.d/kindnet.conf
+            docker exec $container rm /etc/cni/net.d/10-kindnet.conflist
+            done
+EONG
+        fi
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
             kubectl apply -f k8s/skydive.yml
         fi
 
-        # Create Multiple Networks
-        kubectl label nodes k8s-worker flannel-etcd=true --overwrite
-        pushd k8s/overlay
-        ./install.sh
-        popd
+        if [ "${MULTI_CNI:-multus}" != "nsm" ]; then
+            # Create Multiple Networks
+            kubectl label nodes k8s-worker flannel-etcd=true --overwrite
+            pushd k8s/overlay
+            kubectl apply -f flannel_rbac.yml
+            ./install.sh
+            popd
+        fi
 
         # Deploy Multiplexer CNI services
         pushd ./k8s/"${MULTI_CNI:-multus}"/

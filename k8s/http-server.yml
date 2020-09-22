@@ -19,6 +19,7 @@ metadata:
         {"clusterNetwork":"lte-sgi"}
       ]
   labels:
+    app.kubernetes.io/name: http-server
     network: pdn
 spec:
   affinity:

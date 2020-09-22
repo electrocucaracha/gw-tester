@@ -54,6 +54,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: sgw-init-script
+  labels:
+    app.kubernetes.io/name: sgw
 data:
   init.sh: |
     until ip add show s5u3 > /dev/null ; do

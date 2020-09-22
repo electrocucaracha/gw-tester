@@ -18,6 +18,8 @@ metadata:
       [
         {"clusterNetwork":"lte-euu"}
       ]
+  labels:
+    app.kubernetes.io/name: external-client
 spec:
   affinity:
     podAffinity:
@@ -61,6 +63,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: external-client-init-script
+  labels:
+    app.kubernetes.io/name: external-client
 data:
   init.sh: |
     while true; do

@@ -73,6 +73,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: pgw-init-script
+  labels:
+    {{- include "pgw.labels" . | nindent 4 }}
 data:
   init.sh: |
     s5u_ip=$(ifconfig {{ .Values.s5u.interface }} | awk '/inet addr/{print substr($2,6)}')

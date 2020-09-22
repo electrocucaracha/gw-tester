@@ -62,6 +62,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: enb-init-script
+  labels:
+    app.kubernetes.io/name: enb
 data:
   init.sh: |2
     http_code=$(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}")

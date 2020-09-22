@@ -16,11 +16,9 @@ if [[ "${DEBUG:-true}" == "true" ]]; then
 fi
 
 kubectl delete -f etcd.yml --ignore-not-found --wait=false
-if [ "${PKG_MGR:-k8s}" == "helm" ]; then
-    for chart in saegw mme enb; do
-        if helm ls | grep "$chart"; then
-            helm uninstall "$chart"
-        fi
-    done
-fi
-kubectl delete pod --all --timeout=3m
+for chart in saegw mme enb; do
+    if helm ls | grep "$chart"; then
+        helm uninstall "$chart"
+    fi
+done
+kubectl delete all,cm --selector=app.kubernetes.io/name --timeout=3m

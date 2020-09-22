@@ -75,6 +75,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: sgw-init-script
+  labels:
+    {{- include "sgw.labels" . | nindent 4 }}
 data:
   init.sh: |
     s5u_ip=$(ifconfig $(ip a | grep {{ .Values.s5u.container_prefix | quote }} | awk -v FS="(: |@)" '{print $2; exit}') | awk '/inet addr/{print substr($2,6)}')

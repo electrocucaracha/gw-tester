@@ -13,16 +13,16 @@ kind: Deployment
 metadata:
   name: lte-etcd
   labels:
-    app: lte-etcd
+    app.kubernetes.io/name: lte-etcd
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: lte-etcd
+      app.kubernetes.io/name: lte-etcd
   template:
     metadata:
       labels:
-        app: lte-etcd
+        app.kubernetes.io/name: lte-etcd
     spec:
       containers:
         - command:
@@ -46,11 +46,11 @@ kind: Service
 metadata:
   name: lte-etcd
   labels:
-    app: lte-etcd
+    app.kubernetes.io/name: lte-etcd
 spec:
   type: ClusterIP
   ports:
     - port: 12379
       targetPort: 12379
   selector:
-    app: lte-etcd
+    app.kubernetes.io/name: lte-etcd

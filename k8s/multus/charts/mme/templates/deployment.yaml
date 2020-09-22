@@ -69,6 +69,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mme-init-script
+  labels:
+    {{- include "mme.labels" . | nindent 4 }}
 data:
   init.sh: |
     http_code=$(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/pgw_s5c_ip -s -o /dev/null -w "%{http_code}")

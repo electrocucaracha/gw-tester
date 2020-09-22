@@ -67,10 +67,15 @@ metadata:
   name: enb-init-script
 data:
   init.sh: |2
-    if [ $(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
+    http_code=$(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}")
+    if [ "$http_code" == "200" ]; then
         mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip | jq  -r ".node.value")
-    else
+    elif [ "$http_code" == "404" ]; then
         mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip?wait=true | jq  -r ".node.value")
+    else
+        echo "ERROR - eNB pod cannot reach the etcd service"
+        traceroute $LTE_ETCD_SERVICE_HOST -m 5 -p 12379 -q 1
+        exit 1
     fi
     sed -i "s|mme_addr:.*|mme_addr: \"${mme_s1c_ip}:36412\"|g" /etc/gw-tester/enb.yml
 

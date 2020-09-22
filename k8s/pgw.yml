@@ -58,7 +58,7 @@ data:
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/pgw.yml
 
     s5c_ip=$(ifconfig s5c2 | awk '/inet addr/{print substr($2,6)}')
-    curl -s "http://lte-etcd.default.svc.cluster.local:12379/v2/keys/pgw_s5c_ip" -XPUT -d value="$s5c_ip" > /dev/null
+    curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/pgw_s5c_ip -XPUT -d value="$s5c_ip" > /dev/null
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/pgw.yml
 
     sgi_if_name="sgi3"

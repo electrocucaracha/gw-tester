@@ -85,20 +85,35 @@ metadata:
   name: enb-init-script
 data:
   init.sh: |2
-    if [ $(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}") == "200" ]; then
+    http_code=$(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}")
+    if [ "$http_code" == "200" ]; then
         mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip | jq  -r ".node.value")
-    else
+    elif [ "$http_code" == "404" ]; then
         mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip?wait=true | jq  -r ".node.value")
+    else
+        echo "ERROR - eNB pod cannot reach the etcd service"
+        traceroute $LTE_ETCD_SERVICE_HOST -m 5 -p 12379 -q 1
+        exit 1
     fi
     sed -i "s|mme_addr:.*|mme_addr: \"${mme_s1c_ip}:36412\"|g" /etc/gw-tester/enb.yml
 
-    euu_ip=$(ifconfig {{ .Values.s1c.interface }} | awk '/inet addr/{print substr($2,6)}')
+    until ip add show {{ .Values.s1c.interface }} > /dev/null ; do
+        sleep 2
+    done
     s1c_ip=$(ifconfig {{ .Values.s1c.interface }} | awk '/inet addr/{print substr($2,6)}')
-    sed -i "s|s1c_ip:.*|s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
-    s1u_ip=$(ifconfig {{ .Values.s1u.interface }} | awk '/inet addr/{print substr($2,6)}')
-    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
+    sed -i "s|  s1c_ip:.*|  s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
 
-    for i in $(seq 2 254); do
+    until ip add show {{ .Values.s1u.interface }} > /dev/null ; do
+        sleep 2
+    done
+    s1u_ip=$(ifconfig {{ .Values.s1u.interface }} | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|  s1u_ip:.*|  s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
+
+    euu_if="{{ .Values.euu.interface }}"
+    sed -i '/subscribers:/,$d' /etc/gw-tester/enb.yml
+    echo "subscribers:" >> /etc/gw-tester/enb.yml
+    euu_ip=$(ifconfig $euu_if | awk '/inet addr/{print substr($2,6)}')
+    for i in $(seq 0 254); do
         if [ "10.0.3.$i" != "$euu_ip" ]; then
             format_num=$(printf "%03i" $i)
             cat <<EOL >> /etc/gw-tester/enb.yml
@@ -108,7 +123,7 @@ data:
         src_ip: "10.0.3.$i"
         i_tei: 0
         type: "external"
-        euu_if_name: "{{ .Values.euu.interface }}"
+        euu_if_name: "$euu_if"
         http_url: ""
         reattach_on_reload: false
     EOL

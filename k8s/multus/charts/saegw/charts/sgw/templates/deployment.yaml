@@ -76,14 +76,20 @@ metadata:
   name: sgw-init-script
 data:
   init.sh: |
+    until ip add show {{ .Values.s5u.interface }} > /dev/null ; do
+        sleep 2
+    done
     s5u_ip=$(ifconfig {{ .Values.s5u.interface }} | awk '/inet addr/{print substr($2,6)}')
     sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/sgw.yml
 
+    until ip add show {{ .Values.s5c.interface }} > /dev/null ; do
+        sleep 2
+    done
     s5c_ip=$(ifconfig {{ .Values.s5c.interface }} | awk '/inet addr/{print substr($2,6)}')
     sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
 
     s11_ip=$(ifconfig {{ .Values.s11.interface }} | awk '/inet addr/{print substr($2,6)}')
-    curl -s "http://lte-etcd.default.svc.cluster.local:12379/v2/keys/sgw_s11_ip" -XPUT -d value="$s11_ip" > /dev/null
+    curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/sgw_s11_ip -XPUT -d value="$s11_ip" > /dev/null
     sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
 
     s1u_ip=$(ifconfig {{ .Values.s1u.interface }} | awk '/inet addr/{print substr($2,6)}')

@@ -59,8 +59,11 @@ if [ "$multi_cni" == "multus" ]; then
     -o jsonpath='{.items[0].metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' \
     | jq -r '.[] | select(.name=="lte-sgi").ips[0]')
 elif [ "$multi_cni" == "danm" ]; then
-    PGW_SGI_IP=$(kubectl get pods -l=app.kubernetes.io/name=pgw \
-    -o jsonpath='{range .items[0].status.podIPs[*]}{.ip}{"\n"}' | grep "10.0.1")
+    pgw_pod_name=$(kubectl get pods -l=app.kubernetes.io/name=pgw \
+    -o jsonpath='{.items[0].metadata.name}')
+    PGW_SGI_IP=$(kubectl get danmeps.danm.k8s.io \
+    -o jsonpath="{range .items[?(@.spec.Pod == \"$pgw_pod_name\")]}{.spec.Interface}{end}" \
+    | jq -r '. | select(.Name|test("sgi")).Address' | awk -F '/' '{ print $1 }')
 fi
 export PGW_SGI_IP
 envsubst \$PGW_SGI_IP < "http-server_${multi_cni}.yml" | kubectl apply -f -
@@ -75,10 +78,14 @@ if [ "$multi_cni" == "multus" ]; then
     -o jsonpath='{.metadata.annotations.k8s\.v1\.cni\.cncf\.io/networks-status}' \
     | jq -r '.[] | select(.name=="lte-sgi").ips[0]')
 elif [ "$multi_cni" == "danm" ]; then
-    ENB_EUU_IP=$(kubectl get pods -l=app.kubernetes.io/name=enb \
-    -o jsonpath='{range .items[0].status.podIPs[*]}{.ip}{"\n"}' | grep "10.0.3")
-    HTTP_SERVER_SGI_IP=$(kubectl get pod/http-server \
-    -o jsonpath='{.status.podIPs[0].ip}')
+    enb_pod_name=$(kubectl get pods -l=app.kubernetes.io/name=enb \
+    -o jsonpath='{.items[0].metadata.name}')
+    ENB_EUU_IP=$(kubectl get danmeps.danm.k8s.io \
+    -o jsonpath="{range .items[?(@.spec.Pod == \"$enb_pod_name\")]}{.spec.Interface}{end}" \
+    | jq -r '. | select(.Name|test("euu")).Address' | awk -F '/' '{ print $1 }')
+    HTTP_SERVER_SGI_IP=$(kubectl get danmeps.danm.k8s.io \
+    -o jsonpath='{range .items[?(@.spec.Pod == "http-server")]}{.spec.Interface.Address}{end}' \
+    | awk -F '/' '{ print $1 }')
 elif [ "$multi_cni" == "nsm" ]; then
     HTTP_SERVER_SGI_IP=$(kubectl exec http-server -- ifconfig sgi0 | awk '/inet addr/{print substr($2,6)}')
 fi

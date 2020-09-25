@@ -37,10 +37,10 @@ spec:
       securityContext:
         capabilities:
           add: ["NET_ADMIN"]
-      command: ["ip", "route", "add", "10.0.1.0/24", "via", "$(enb_euu_ip)"]
+      command: ["ip", "route", "add", "10.0.1.0/24", "via", "$(ENB_EUU_IP)"]
       env:
-        - name: enb_euu_ip
-          value: $ENB_EUU_IP
+        - name: ENB_EUU_IP
+          value: {{env.Getenv "ENB_EUU_IP"}}
   containers:
     - image: electrocucaracha/curl:7.67.0-alpine3.11
       name: external-client
@@ -49,8 +49,8 @@ spec:
       args:
         - "/opt/external-client/script/init.sh"
       env:
-        - name: http_server_sgi_ip
-          value: $HTTP_SERVER_SGI_IP
+        - name: HTTP_SERVER_SGI_IP
+          value: {{env.Getenv "HTTP_SERVER_SGI_IP"}}
       volumeMounts:
         - name: init-script
           mountPath: /opt/external-client/script
@@ -68,6 +68,6 @@ metadata:
 data:
   init.sh: |
     while true; do
-        curl --connect-timeout 5 ${http_server_sgi_ip}
+        curl --connect-timeout 5 ${HTTP_SERVER_SGI_IP}
         sleep 30
     done

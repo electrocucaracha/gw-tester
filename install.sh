@@ -48,7 +48,7 @@ function install_deps {
     fi
 }
 
-exit_trap() {
+function exit_trap {
     if [[ "${DEBUG:-true}" == "true" ]]; then
         set +o xtrace
     fi
@@ -73,6 +73,7 @@ echo "Running installation process..."
 case ${DEPLOYMENT_TYPE:-docker} in
     docker)
         install_deps docker-compose
+
         sudo docker network create --subnet 10.244.0.0/16 --opt com.docker.network.bridge.name=docker_gwbridge docker_gwbridge
         sudo docker swarm init --advertise-addr "${HOST_IP:-$(ip route get 8.8.8.8 | grep "^8." | awk '{ print $7 }')}"
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
@@ -82,6 +83,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
             curl -L https://downloads.portainer.io/portainer-agent-stack.yml -o portainer-agent-stack.yml
             sudo docker stack deploy --compose-file=portainer-agent-stack.yml portainer
         fi
+
         make docker-pull
     ;;
     k8s)
@@ -106,7 +108,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
             kind load docker-image quay.io/coreos/flannel:v0.12.0-amd64 --name k8s
 EONG
         fi
-        for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
+        for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
             kubectl wait --for=condition=ready "node/$node" --timeout=3m
         done
 
@@ -125,8 +127,8 @@ EONG
             kubectl apply -f k8s/skydive.yml
         fi
 
+        # Create Multiple Networks
         if [ "${MULTI_CNI:-multus}" != "nsm" ]; then
-            # Create Multiple Networks
             kubectl label nodes k8s-worker flannel-etcd=true --overwrite
             pushd k8s/overlay
             kubectl apply -f flannel_rbac.yml
@@ -139,9 +141,10 @@ EONG
         ./install.sh
         popd
 
-        for daemonset in $(kubectl get daemonset -n kube-system -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}'); do
+        make k8s-pull
+        # Wait for CNI services
+        for daemonset in $(kubectl get daemonset -n kube-system -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
             kubectl rollout status "daemonset/$daemonset" -n kube-system
         done
-        make k8s-pull
     ;;
 esac

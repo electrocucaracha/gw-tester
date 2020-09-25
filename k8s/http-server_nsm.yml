@@ -15,6 +15,7 @@ metadata:
   annotations:
     ns.networkservicemesh.io: lte-network/sgi0?link=sgi
   labels:
+    app.kubernetes.io/name: http-server
     network: pdn
 spec:
   serviceAccount: nse-acc

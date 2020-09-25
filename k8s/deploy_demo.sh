@@ -17,7 +17,7 @@ fi
 
 multi_cni="${MULTI_CNI:-multus}"
 
-exit_trap() {
+function exit_trap {
     if [[ "${DEBUG:-true}" == "true" ]]; then
         set +o xtrace
     fi
@@ -26,19 +26,33 @@ exit_trap() {
     printf "Memory free(Kb): "
     awk -v low="$(grep low /proc/zoneinfo | awk '{k+=$2}END{print k}')" '{a[$1]=$2}  END{ print a["MemFree:"]+a["Active(file):"]+a["Inactive(file):"]+a["SReclaimable:"]-(12*low);}' /proc/meminfo
     echo "Environment variables:"
-    echo "DEPLOYMENT_TYPE: $DEPLOYMENT_TYPE"
-    echo "MULTI_CNI: $MULTI_CNI"
-    echo "PKG_MGR: $PKG_MGR"
+    echo "DEPLOYMENT_TYPE: ${DEPLOYMENT_TYPE:-k8s}"
+    echo "MULTI_CNI: ${MULTI_CNI:-multus}"
+    echo "PKG_MGR: ${PKG_MGR:-k8s}"
     echo "Kubernetes Resources:"
     kubectl get all -A -o wide
 }
 
 trap exit_trap ERR
 
+if ! command -v go; then
+    curl -fsSL http://bit.ly/install_pkg | PKG=go-lang bash
+    # shellcheck disable=SC1091
+    source /etc/profile.d/path.sh
+fi
+GO_GET_CMD="GOPATH=/tmp/ $(command -v go) get -u"
+if [ "${DEBUG:-true}" == "true" ]; then
+    GO_GET_CMD+=" -v"
+fi
+if ! command -v gomplate; then
+    eval "$GO_GET_CMD github.com/hairyhenderson/gomplate/cmd/gomplate"
+    sudo mv /tmp/bin/gomplate /usr/bin/
+fi
+
 ./undeploy_demo.sh
 
 # Get an IP Cluster
-kubectl apply -f etcd.yml
+kubectl apply -f etcd.yml --wait=false
 kubectl rollout status deployment/lte-etcd --timeout=3m
 
 if [ "${PKG_MGR:-k8s}" == "helm" ]; then
@@ -48,7 +62,7 @@ if [ "${PKG_MGR:-k8s}" == "helm" ]; then
     kubectl rollout status deployment/saegw-pgw --timeout=3m
 else
     for pod in pgw sgw mme enb; do
-        kubectl apply -f "${pod}_${multi_cni}.yml"
+        kubectl apply -f "${pod}_${multi_cni}.yml" --wait=false
     done
     kubectl wait --for=condition=ready pods pgw --timeout=3m
 fi
@@ -66,7 +80,7 @@ elif [ "$multi_cni" == "danm" ]; then
     | jq -r '. | select(.Name|test("sgi")).Address' | awk -F '/' '{ print $1 }')
 fi
 export PGW_SGI_IP
-envsubst \$PGW_SGI_IP < "http-server_${multi_cni}.yml" | kubectl apply -f -
+gomplate -f "http-server_${multi_cni}.yml" | kubectl apply --wait=false -f -
 
 # Deploy External client
 kubectl wait --for=condition=ready pods --all --timeout=3m
@@ -90,7 +104,7 @@ elif [ "$multi_cni" == "nsm" ]; then
     HTTP_SERVER_SGI_IP=$(kubectl exec http-server -- ifconfig sgi0 | awk '/inet addr/{print substr($2,6)}')
 fi
 export ENB_EUU_IP HTTP_SERVER_SGI_IP
-envsubst \$ENB_EUU_IP,\$HTTP_SERVER_SGI_IP < "external-client_${multi_cni}.yml" | kubectl apply -f -
+gomplate -f "external-client_${multi_cni}.yml" | kubectl apply -f -
 kubectl wait --for=condition=ready pod external-client --timeout=3m
 
 trap ERR

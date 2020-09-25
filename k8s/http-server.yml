@@ -41,7 +41,7 @@ spec:
       command: ["ip", "route", "add", "10.0.3.0/24", "via", "$(pgw_sgi_ip)"]
       env:
         - name: pgw_sgi_ip
-          value: $PGW_SGI_IP
+          value: {{env.Getenv "PGW_SGI_IP"}}
   containers:
     - image: python:3.8.2-alpine3.11
       name: http-server

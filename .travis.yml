@@ -13,6 +13,8 @@ os: linux
 git:
   depth: 1
 dist: bionic
+before_install:
+  - eval "$(gimme stable)"
 jobs:
   include:
     - name: Lint validation

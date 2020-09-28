@@ -87,42 +87,49 @@ case ${DEPLOYMENT_TYPE:-docker} in
         make docker-pull
     ;;
     k8s)
-        install_deps kind kubectl jq helm
+        install_deps kubectl jq helm
 
-        # Download CNI plugins
-        if [ ! -d /opt/containernetworking/plugins ]; then
-            pushd "$(mktemp -d)"
-            cni_plugin_version=$(curl -s https://api.github.com/repos/containernetworking/plugins/releases/latest | grep -Po '"tag_name":.*?[^\\]",' | awk -F  "\"" 'NR==1{print $4}')
-            curl -Lo cni-plugins.tgz "https://github.com/containernetworking/plugins/releases/download/${cni_plugin_version}/cni-plugins-$(uname | awk '{print tolower($0)}')-$(get_cpu_arch)-${cni_plugin_version}.tgz" > /dev/null
-            sudo mkdir -p /opt/containernetworking/plugins
-            sudo chown "$USER" -R /opt/containernetworking/plugins
-            tar xf cni-plugins.tgz -C /opt/containernetworking/plugins
-            popd
-        fi
+        if [ "${DEPLOY_KIND_CLUSTER:-true}" == "true" ]; then
+            install_deps kind
+            # Download CNI plugins
+            if [ ! -d /opt/containernetworking/plugins ]; then
+                pushd "$(mktemp -d)"
+                cni_plugin_version=$(curl -s https://api.github.com/repos/containernetworking/plugins/releases/latest | grep -Po '"tag_name":.*?[^\\]",' | awk -F  "\"" 'NR==1{print $4}')
+                curl -Lo cni-plugins.tgz "https://github.com/containernetworking/plugins/releases/download/${cni_plugin_version}/cni-plugins-$(uname | awk '{print tolower($0)}')-$(get_cpu_arch)-${cni_plugin_version}.tgz" > /dev/null
+                sudo mkdir -p /opt/containernetworking/plugins
+                sudo chown "$USER" -R /opt/containernetworking/plugins
+                tar xf cni-plugins.tgz -C /opt/containernetworking/plugins
+                popd
+            fi
 
-        # Deploy Kubernetes Cluster
-        if ! sudo "$(command -v kind)" get clusters | grep -e k8s; then
-            newgrp docker <<EONG
-            kind create cluster --name k8s --config=./k8s/kind-config.yml --wait=300s
-            docker pull quay.io/coreos/flannel:v0.12.0-amd64
-            kind load docker-image quay.io/coreos/flannel:v0.12.0-amd64 --name k8s
+            # Deploy Kubernetes Cluster
+            if ! sudo "$(command -v kind)" get clusters | grep -e k8s; then
+                newgrp docker <<EONG
+                kind create cluster --name k8s --config=./k8s/kind-config.yml --wait=300s
+                docker pull quay.io/coreos/flannel:v0.12.0-amd64
+                kind load docker-image quay.io/coreos/flannel:v0.12.0-amd64 --name k8s
 EONG
-        fi
-        for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
-            kubectl wait --for=condition=ready "node/$node" --timeout=3m
-        done
-
-        # NOTE: DANM does not support chaining together multiple CNI plugin
-        if [ "${MULTI_CNI:-multus}" == "danm" ]; then
-            newgrp docker << "EONG"
-            for container in $(docker ps -q --filter ancestor=kindest/node:v1.18.2); do
-            docker cp $container:/etc/cni/net.d/10-kindnet.conflist /tmp/10-kindnet.conflist
-            jq '. | { name: .name, cniVersion: .cniVersion, type: .plugins[0].type, ipMasq: .plugins[0].ipMasq, ipam: .plugins[0].ipam }' /tmp/10-kindnet.conflist > /tmp/kindnet.conf
-            docker cp /tmp/kindnet.conf $container:/etc/cni/net.d/kindnet.conf
-            docker exec $container rm /etc/cni/net.d/10-kindnet.conflist
+            fi
+            for node in $(kubectl get node -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
+                kubectl wait --for=condition=ready "node/$node" --timeout=3m
             done
+
+            # NOTE: DANM does not support chaining together multiple CNI plugin
+            if [ "${MULTI_CNI:-multus}" == "danm" ]; then
+                newgrp docker << "EONG"
+                for container in $(docker ps -q --filter ancestor=kindest/node:v1.18.2); do
+                docker cp $container:/etc/cni/net.d/10-kindnet.conflist /tmp/10-kindnet.conflist
+                jq '. | { name: .name, cniVersion: .cniVersion, type: .plugins[0].type, ipMasq: .plugins[0].ipMasq, ipam: .plugins[0].ipam }' /tmp/10-kindnet.conflist > /tmp/kindnet.conf
+                docker cp /tmp/kindnet.conf $container:/etc/cni/net.d/kindnet.conf
+                docker exec $container rm /etc/cni/net.d/10-kindnet.conflist
+                done
 EONG
+            fi
+
+            # Wait for CoreDNS service
+            kubectl rollout status deployment/coredns -n kube-system
         fi
+
         if [ "${ENABLE_SKYDIVE:-false}" == "true" ]; then
             kubectl apply -f k8s/skydive.yml
         fi
@@ -140,7 +147,9 @@ EONG
         ./install.sh
         popd
 
-        make k8s-pull
+        if [ "${DEPLOY_KIND_CLUSTER:-true}" == "true" ]; then
+            make k8s-pull
+        fi
         # Wait for CNI services
         for daemonset in $(kubectl get daemonset -n kube-system -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}'); do
             kubectl rollout status "daemonset/$daemonset" -n kube-system

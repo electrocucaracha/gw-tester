@@ -71,16 +71,17 @@ following instruction:
 
 ### Environment variables
 
-| Name             | Default | Options           | Description                                                           |
-|:-----------------|:--------|:------------------|:----------------------------------------------------------------------|
-| DEBUG            | true    | false, true       | Enables verbose execution                                             |
-| DEPLOYMENT_TYPE  | docker  | docker, k8s       | Defines the container orchestrator tool to be used for the deployment |
-| MULTI_CNI        | multus  | multus, danm, nsm | Determines the CNI multiplexer to be used for the deployment          |
-| PKG_MGR          | k8s     | k8s, helm         | Determines the Kubernetes package manager to be used                  |
-| HOST_IP          |         |                   | Local IP address of the host server                                   |
-| PLUGIN_CNI       | flannel | flannel, ipvlan   | Determines the CNI plugin to be used by DANM                          |
-| ENABLE_SKYDIVE   | false   | false, true       | Enables [Skydive](http://skydive.network/) web dashboard              |
-| ENABLE_PORTAINER | false   | false, true       | Enables [Portainer](https://www.portainer.io/) web dashboard          |
+| Name                | Default | Options           | Description                                                                         |
+|:--------------------|:--------|:------------------|:------------------------------------------------------------------------------------|
+| DEBUG               | true    | false, true       | Enables verbose execution                                                           |
+| DEPLOYMENT_TYPE     | docker  | docker, k8s       | Defines the container orchestrator tool to be used for the deployment               |
+| MULTI_CNI           | multus  | multus, danm, nsm | Determines the CNI multiplexer to be used for the deployment                        |
+| PKG_MGR             | k8s     | k8s, helm         | Determines the Kubernetes package manager to be used                                |
+| HOST_IP             |         |                   | Local IP address of the host server                                                 |
+| PLUGIN_CNI          | flannel | flannel, ipvlan   | Determines the CNI plugin to be used by DANM                                        |
+| ENABLE_SKYDIVE      | false   | false, true       | Enables [Skydive](http://skydive.network/) web dashboard                            |
+| ENABLE_PORTAINER    | false   | false, true       | Enables [Portainer](https://www.portainer.io/) web dashboard                        |
+| DEPLOY_KIND_CLUSTER | true    | false, true       | Determines whether a K8s cluster is deployed with [Kind](https://kind.sigs.k8s.io/) |
 
 ### Post-provision
 

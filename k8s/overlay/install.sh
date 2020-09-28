@@ -15,14 +15,13 @@ if [[ "${DEBUG:-true}" == "true" ]]; then
     set -o xtrace
 fi
 
-# Wait for CoreDNS service
-kubectl rollout status deployment/coredns -n kube-system
-
-# Load the ETCD image to local regitstry
-newgrp docker <<EONG
-docker pull quay.io/coreos/etcd:v3.3.20
-kind load docker-image quay.io/coreos/etcd:v3.3.20 --name k8s
+if [ "${DEPLOY_KIND_CLUSTER:-true}" == "true" ]; then
+    # Load the ETCD image to local regitstry
+    newgrp docker <<EONG
+    docker pull quay.io/coreos/etcd:v3.3.20
+    kind load docker-image quay.io/coreos/etcd:v3.3.20 --name k8s
 EONG
+fi
 
 # Get an IP Cluster
 kubectl apply -f etcd.yml

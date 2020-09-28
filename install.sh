@@ -129,7 +129,6 @@ EONG
 
         # Create Multiple Networks
         if [ "${MULTI_CNI:-multus}" != "nsm" ]; then
-            kubectl label nodes k8s-worker flannel-etcd=true --overwrite
             pushd k8s/overlay
             kubectl apply -f flannel_rbac.yml
             ./install.sh

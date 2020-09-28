@@ -25,8 +25,6 @@ spec:
       labels:
         app: flannel-etcd
     spec:
-      nodeSelector:
-        flannel-etcd: "true"
       containers:
         - command:
             - etcd

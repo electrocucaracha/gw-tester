@@ -16,8 +16,6 @@ metadata:
 spec:
   template:
     spec:
-      nodeSelector:
-        flannel-etcd: "true"
       containers:
         - name: etcdctl-lte-s5u
           image: quay.io/coreos/etcd:v3.3.20

@@ -1,0 +1,37 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+s5u:
+  name: lte-s5u
+  networkId: 172.25.0.0
+  networkLength: 24
+s5c:
+  name: lte-s5c
+  networkId: 172.25.1.0
+  networkLength: 24
+sgi:
+  name: lte-sgi
+  networkId: 10.0.1.0
+  networkLength: 24
+euu:
+  networkId: 10.0.3.0
+  networkLength: 24
+
+replicaCount: 1
+
+image:
+  repository: electrocucaracha/pgw
+  pullPolicy: IfNotPresent
+  tag: ""
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100

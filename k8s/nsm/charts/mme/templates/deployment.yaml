@@ -1,0 +1,108 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mme.fullname" . }}
+  labels:
+    {{- include "mme.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "mme.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        ns.networkservicemesh.io: lte-network/{{ .Values.s11.interface }}?link=s11
+      labels:
+        network: epc
+        {{- include "mme.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccount: nse-acc
+      containers:
+        - name: sidecar-s1c
+          image: nse:v0.2.0
+          env:
+            - name: ADVERTISE_NSE_NAME
+              value: "lte-network"
+            - name: ADVERTISE_NSE_LABELS
+              value: "app=mme-s1c"
+            - name: IP_ADDRESS
+              value: "{{ .Values.s1c.networkId }}/{{ .Values.s1c.networkLength }}"
+          resources:
+            limits:
+              networkservicemesh.io/socket: 1
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - "sh"
+          args:
+            - "/opt/gw-tester/script/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/gw-tester/script
+      volumes:
+        - name: init-script
+          configMap:
+            name: mme-init-script
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mme-init-script
+  labels:
+    {{- include "mme.labels" . | nindent 4 }}
+data:
+  init.sh: |
+    http_code=$(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/pgw_s5c_ip -s -o /dev/null -w "%{http_code}")
+    if [ "$http_code" == "200" ]; then
+        pgw_s5c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/pgw_s5c_ip | jq  -r ".node.value")
+    elif [ "$http_code" == "404" ]; then
+        pgw_s5c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/pgw_s5c_ip?wait=true | jq  -r ".node.value")
+    else
+        echo "ERROR - MME pod cannot reach the etcd service"
+        exit 1
+    fi
+    sed -i "s|pgw_s5c_ip:.*|pgw_s5c_ip: \"$pgw_s5c_ip\"|g" /etc/gw-tester/mme.yml
+
+    http_code=$(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/sgw_s11_ip -s -o /dev/null -w "%{http_code}")
+    if [ "$http_code" == "200" ]; then
+        sgw_s11_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/sgw_s11_ip | jq  -r ".node.value")
+    elif [ "$http_code" == "404" ]; then
+        sgw_s11_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/sgw_s11_ip?wait=true | jq  -r ".node.value")
+    else
+        echo "ERROR - MME pod cannot reach the etcd service"
+        exit 1
+    fi
+    sed -i "s|sgw_s11_ip:.*|sgw_s11_ip: \"$sgw_s11_ip\"|g" /etc/gw-tester/mme.yml
+
+    until ip add show {{ .Values.s11.interface }} > /dev/null ; do
+        sleep 2
+    done
+    s11_ip=$(ifconfig s111 | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|  s11_ip:.*|  s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/mme.yml
+
+    until ip route get {{ .Values.s1c.networkId }} | grep -q nsm; do
+        sleep 2
+    done
+    s1c_ip=$(ip route get {{ .Values.s1c.networkId }} | awk '{ print $6}')
+    curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -XPUT -d value="$s1c_ip" > /dev/null
+    sed -i "s|  s1c_addr:.*|  s1c_addr: \"${s1c_ip}:36412\"|g" /etc/gw-tester/mme.yml
+
+    ip a
+    ip route
+    cat /etc/gw-tester/mme.yml
+
+    /opt/gw-tester/bin/mme -config /etc/gw-tester/mme.yml

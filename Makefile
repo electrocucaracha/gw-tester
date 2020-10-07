@@ -57,7 +57,7 @@ helm-undeploy-demo:
 helm-logs:
 	for deployment in pgw sgw mme enb; do \
 		echo "--- $${deployment} ---"; \
-		kubectl logs -l=app.kubernetes.io/name=$${deployment} ; \
+		kubectl logs -l=app.kubernetes.io/name=$${deployment} -c $${deployment}; \
 	done
 helm-debug: k8s-debug
 helm-configure:

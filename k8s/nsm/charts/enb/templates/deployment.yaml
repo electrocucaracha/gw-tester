@@ -1,0 +1,136 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "enb.fullname" . }}
+  labels:
+    {{- include "enb.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "enb.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        ns.networkservicemesh.io: lte-network/{{ .Values.s1c.interface }}?link=s1c,lte-network/{{ .Values.s1u.interface }}?link=s1u
+      labels:
+        network: e-utran
+        {{- include "enb.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccount: nse-acc
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: network
+                    operator: In
+                    values:
+                      - pdn
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+        - name: sidecar-euu
+          image: nse:v0.2.0
+          env:
+            - name: ADVERTISE_NSE_NAME
+              value: "lte-network"
+            - name: ADVERTISE_NSE_LABELS
+              value: "app=enb-euu"
+            - name: IP_ADDRESS
+              value: "{{ .Values.euu.networkId }}/{{ .Values.euu.networkLength }}"
+            - name: ROUTE
+              value: "{{ .Values.sgi.networkId }}/{{ .Values.sgi.networkLength }}"
+          resources:
+            limits:
+              networkservicemesh.io/socket: 1
+        - name: {{ .Chart.Name }}
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - "sh"
+          args:
+            - "/opt/gw-tester/script/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/gw-tester/script
+      volumes:
+        - name: init-script
+          configMap:
+            name: enb-init-script
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: enb-init-script
+  labels:
+    {{- include "enb.labels" . | nindent 4 }}
+data:
+  init.sh: |2
+    http_code=$(curl http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip -s -o /dev/null -w "%{http_code}")
+    if [ "$http_code" == "200" ]; then
+        mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip | jq  -r ".node.value")
+    elif [ "$http_code" == "404" ]; then
+        mme_s1c_ip=$(curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/mme_s1c_ip?wait=true | jq  -r ".node.value")
+    else
+        echo "ERROR - eNB pod cannot reach the etcd service"
+        traceroute $LTE_ETCD_SERVICE_HOST -m 5 -p 12379 -q 1
+        exit 1
+    fi
+    sed -i "s|mme_addr:.*|mme_addr: \"${mme_s1c_ip}:36412\"|g" /etc/gw-tester/enb.yml
+
+    until ip add show {{ .Values.s1c.interface }} > /dev/null ; do
+        sleep 2
+    done
+    s1c_ip=$(ifconfig {{ .Values.s1c.interface }} | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|  s1c_ip:.*|  s1c_ip: \"${s1c_ip}\"|g" /etc/gw-tester/enb.yml
+
+    until ip add show {{ .Values.s1u.interface }} > /dev/null ; do
+        sleep 2
+    done
+    s1u_ip=$(ifconfig {{ .Values.s1u.interface }} | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|  s1u_ip:.*|  s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/enb.yml
+
+    until ip route get {{ .Values.euu.networkId }} | grep -q nsm; do
+        sleep 2
+    done
+    euu_if=$(ip route get {{ .Values.euu.networkId }} | awk '{ print $4}')
+    sed -i '/subscribers:/,$d' /etc/gw-tester/enb.yml
+    echo "subscribers:" >> /etc/gw-tester/enb.yml
+    euu_ip=$(ifconfig $euu_if | awk '/inet addr/{print substr($2,6)}')
+    for i in $(seq 0 254); do
+        if [ "10.0.3.$i" != "$euu_ip" ]; then
+            format_num=$(printf "%03i" $i)
+            cat <<EOL >> /etc/gw-tester/enb.yml
+      - imsi: "00101000000000$format_num"
+        msisdn: "81400000000$format_num"
+        imeisv: "123450000000$format_num"
+        src_ip: "10.0.3.$i"
+        i_tei: 0
+        type: "external"
+        euu_if_name: "$euu_if"
+        http_url: ""
+        reattach_on_reload: false
+    EOL
+        fi
+    done
+
+    ip a
+    ip route
+    cat /etc/gw-tester/enb.yml
+
+    /opt/gw-tester/bin/enb -config /etc/gw-tester/enb.yml

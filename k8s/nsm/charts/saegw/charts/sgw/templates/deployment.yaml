@@ -1,0 +1,113 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c) 2020
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "sgw.fullname" . }}
+  labels:
+    {{- include "sgw.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "sgw.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        ns.networkservicemesh.io: lte-network/{{ .Values.s5u.interface }}?link=s5u,lte-network/{{ .Values.s5c.interface }}?link=s5c
+      labels:
+        network: epc
+        {{- include "sgw.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccount: nse-acc
+      containers:
+        - name: sidecar-s1u
+          image: nse:v0.2.0
+          env:
+            - name: ADVERTISE_NSE_NAME
+              value: "lte-network"
+            - name: ADVERTISE_NSE_LABELS
+              value: "app=sgw-s1u"
+            - name: IP_ADDRESS
+              value: "{{ .Values.s1u.networkId }}/{{ .Values.s1u.networkLength }}"
+          resources:
+            limits:
+              networkservicemesh.io/socket: 1
+        - name: sidecar-s11
+          image: nse:v0.2.0
+          env:
+            - name: ADVERTISE_NSE_NAME
+              value: "lte-network"
+            - name: ADVERTISE_NSE_LABELS
+              value: "app=sgw-s11"
+            - name: IP_ADDRESS
+              value: "{{ .Values.s11.networkId }}/{{ .Values.s11.networkLength }}"
+          resources:
+            limits:
+              networkservicemesh.io/socket: 1
+        - name: {{ .Chart.Name }}
+          securityContext:
+            capabilities:
+              add: ["NET_ADMIN"]
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - "sh"
+          args:
+            - "/opt/gw-tester/script/init.sh"
+          volumeMounts:
+            - name: init-script
+              mountPath: /opt/gw-tester/script
+      volumes:
+        - name: init-script
+          configMap:
+            name: sgw-init-script
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sgw-init-script
+  labels:
+    {{- include "sgw.labels" . | nindent 4 }}
+data:
+  init.sh: |
+    until ip add show {{ .Values.s5u.interface }} > /dev/null ; do
+        sleep 2
+    done
+    s5u_ip=$(ifconfig {{ .Values.s5u.interface }} | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|s5u_ip:.*|s5u_ip: \"${s5u_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    until ip add show {{ .Values.s5c.interface }} > /dev/null ; do
+        sleep 2
+    done
+    s5c_ip=$(ifconfig {{ .Values.s5c.interface }} | awk '/inet addr/{print substr($2,6)}')
+    sed -i "s|s5c_ip:.*|s5c_ip: \"${s5c_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    until ip route get {{ .Values.s11.networkId }} | grep -q nsm; do
+        sleep 2
+    done
+    s11_ip=$(ip route get {{ .Values.s11.networkId }} | awk '{ print $6}')
+    curl -s http://lte-etcd.default.svc.cluster.local:12379/v2/keys/sgw_s11_ip -XPUT -d value="$s11_ip" > /dev/null
+    sed -i "s|s11_ip:.*|s11_ip: \"${s11_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    until ip route get {{ .Values.s1u.networkId }} | grep -q nsm; do
+        sleep 2
+    done
+    s1u_ip=$(ip route get {{ .Values.s1u.networkId }} | awk '{ print $6}')
+    sed -i "s|s1u_ip:.*|s1u_ip: \"${s1u_ip}\"|g" /etc/gw-tester/sgw.yml
+
+    ip a
+    ip route
+    cat /etc/gw-tester/sgw.yml
+
+    /opt/gw-tester/bin/sgw -config /etc/gw-tester/sgw.yml

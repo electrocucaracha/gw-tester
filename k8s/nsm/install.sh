@@ -15,6 +15,16 @@ if [[ "${DEBUG:-true}" == "true" ]]; then
     set -o xtrace
 fi
 
+if [ "${DEPLOY_KIND_CLUSTER:-true}" == "true" ]; then
+    # Load NSM images to local regitstry
+    for image in admission-webhook vppagent-forwarder nsmdp nsmd nsmd-k8s; do
+        newgrp docker <<EONG
+        docker pull networkservicemesh/$image:v0.2.0
+        kind load docker-image networkservicemesh/$image:v0.2.0 --name k8s
+EONG
+    done
+fi
+
 # Add helm chart release repositories
 if ! helm repo list | grep -e nsm; then
     helm repo add nsm https://helm.nsm.dev/

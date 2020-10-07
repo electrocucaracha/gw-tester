@@ -16,7 +16,7 @@ if [[ "${DEBUG:-true}" == "true" ]]; then
 fi
 
 if [ "${DEPLOY_KIND_CLUSTER:-true}" == "true" ]; then
-    # Load the ETCD image to local regitstry
+    # Load Multus image to local regitstry
     newgrp docker <<EONG
     docker pull nfvpe/multus:v3.4
     kind load docker-image nfvpe/multus:v3.4 --name k8s

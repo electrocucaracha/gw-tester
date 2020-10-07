@@ -35,18 +35,26 @@ function exit_trap {
 
 trap exit_trap ERR
 
-if ! command -v go; then
-    curl -fsSL http://bit.ly/install_pkg | PKG=go-lang bash
-    # shellcheck disable=SC1091
-    source /etc/profile.d/path.sh
-fi
-GO_GET_CMD="GOPATH=/tmp/ $(command -v go) get -u"
-if [ "${DEBUG:-true}" == "true" ]; then
-    GO_GET_CMD+=" -v"
-fi
 if ! command -v gomplate; then
-    eval "$GO_GET_CMD github.com/hairyhenderson/gomplate/cmd/gomplate"
-    sudo mv /tmp/bin/gomplate /usr/bin/
+    version="3.8.0"
+    binary="gomplate_$(uname | tr '[:upper:]' '[:lower:]')-"
+    case "$(uname -m)" in
+        x86_64)
+            binary+=amd64
+        ;;
+        armv8*)
+            binary+=arm64
+        ;;
+        aarch64*)
+            binary+=arm64
+        ;;
+        armv*)
+            binary+=armv7
+        ;;
+    esac
+    echo "Installing gomplate version $version"
+    sudo curl -o /usr/bin/gomplate -sL "https://github.com/hairyhenderson/gomplate/releases/download/v${version}/${binary}-slim"
+    sudo chmod +x /usr/bin/gomplate
 fi
 
 ./undeploy_demo.sh

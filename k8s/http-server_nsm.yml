@@ -30,6 +30,5 @@ spec:
                   - pdn
           topologyKey: "kubernetes.io/hostname"
   containers:
-    - image: python:3.8.2-alpine3.11
+    - image: httpd:2.4.46-alpine
       name: http-server
-      command: ["python", "-m", "http.server", "80"]

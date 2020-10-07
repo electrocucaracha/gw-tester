@@ -22,8 +22,8 @@ case ${DEPLOYMENT_TYPE:-docker} in
         if [[ "${DEBUG:-true}" == "true" ]]; then
             sudo docker ps
             make docker-logs
-            sudo docker logs "$(sudo docker ps --filter "name=docker_external_client_1*" --format "{{.Names}}")"
         fi
+        sudo docker logs "$(sudo docker ps --filter "name=docker_external_client_1*" --format "{{.Names}}")"
     ;;
     k8s)
         if [ "${PKG_MGR:-k8s}" == "helm" ]; then
@@ -31,15 +31,14 @@ case ${DEPLOYMENT_TYPE:-docker} in
             if [[ "${DEBUG:-true}" == "true" ]]; then
                 kubectl get all -o wide
                 make helm-logs
-                kubectl logs external-client -c external-client
             fi
         else
             make k8s-deploy-demo
             if [[ "${DEBUG:-true}" == "true" ]]; then
                 kubectl get all -o wide
                 make k8s-logs
-                kubectl logs external-client -c external-client
             fi
         fi
+        kubectl logs external-client -c external-client
     ;;
 esac

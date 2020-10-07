@@ -34,7 +34,7 @@ spec:
           topologyKey: "kubernetes.io/hostname"
   initContainers:
     - name: configure
-      image: python:3.8.2-alpine3.11
+      image: httpd:2.4.46-alpine
       securityContext:
         capabilities:
           add: ["NET_ADMIN"]
@@ -43,6 +43,5 @@ spec:
         - name: pgw_sgi_ip
           value: {{env.Getenv "PGW_SGI_IP"}}
   containers:
-    - image: python:3.8.2-alpine3.11
+    - image: httpd:2.4.46-alpine
       name: http-server
-      command: ["python", "-m", "http.server", "80"]

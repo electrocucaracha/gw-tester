@@ -12,13 +12,13 @@ version: '2.4'
 
 services:
   http_server:
-    image: python:3.8.2-alpine3.11
+    image: httpd:2.4.46-alpine
     networks:
       lte-sgi:
         ipv4_address: 10.0.1.201
     depends_on:
       - pgw
-    command: [sh, -c, "ip route add 10.0.3.0/24 via 10.0.1.254 && python -m http.server 80"]
+    command: [sh, -c, "ip route add 10.0.3.0/24 via 10.0.1.254 && /usr/local/bin/httpd-foreground"]
     cap_add:
       - NET_ADMIN
   external_client:
@@ -28,6 +28,6 @@ services:
         ipv4_address: 10.0.3.201
     depends_on:
       - http_server
-    command: [sh, -c, "ip route add 10.0.1.0/24 via 10.0.3.254 && while true; do curl --connect-timeout 5 10.0.1.201 && sleep 30; done"]
+    command: [sh, -c, "ip route add 10.0.1.0/24 via 10.0.3.254 && while true; do curl -s --connect-timeout 5 10.0.1.201 | sed -e 's/<[^>]*>//g' && sleep 30; done"]
     cap_add:
       - NET_ADMIN

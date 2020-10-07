@@ -23,6 +23,7 @@ script:
   - ./install.sh
   - kubectl get all -A -o wide
   - ./deploy.sh
+  - ./check.sh
 env:
   - DEPLOYMENT_TYPE=k8s
   - DEPLOYMENT_TYPE=k8s PKG_MGR=helm
@@ -52,6 +53,7 @@ jobs:
         - curl -fsSL http://bit.ly/initVagrant | PROVIDER=libvirt bash
       script:
         - sudo -E vagrant up
+        - sudo -E vagrant ssh -- bash /vagrant/check.sh
       env:
         - DEPLOYMENT_TYPE=docker
         - ENABLE_SKYDIVE=true

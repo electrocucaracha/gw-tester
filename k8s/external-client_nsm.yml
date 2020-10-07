@@ -55,6 +55,6 @@ metadata:
 data:
   init.sh: |
     while true; do
-        curl --connect-timeout 5 ${HTTP_SERVER_SGI_IP}
+        curl -s --connect-timeout 5 ${HTTP_SERVER_SGI_IP} | sed -e 's/<[^>]*>//g'
         sleep 30
     done

@@ -16,26 +16,6 @@ if [[ "${DEBUG:-true}" == "true" ]]; then
     export PKG_DEBUG=true
 fi
 
-function get_cpu_arch {
-    if [ -z "${PKG_CPU_ARCH:-}" ]; then
-        case "$(uname -m)" in
-            x86_64)
-                PKG_CPU_ARCH=amd64
-            ;;
-            armv8*)
-                PKG_CPU_ARCH=arm64
-            ;;
-            aarch64*)
-                PKG_CPU_ARCH=arm64
-            ;;
-            armv*)
-                PKG_CPU_ARCH=armv7
-            ;;
-        esac
-    fi
-    echo "$PKG_CPU_ARCH"
-}
-
 function install_deps {
     pkgs=""
     for pkg in "$@"; do
@@ -90,17 +70,7 @@ case ${DEPLOYMENT_TYPE:-docker} in
         install_deps kubectl jq helm
 
         if [ "${DEPLOY_KIND_CLUSTER:-true}" == "true" ]; then
-            install_deps kind
-            # Download CNI plugins
-            if [ ! -d /opt/containernetworking/plugins ]; then
-                pushd "$(mktemp -d)"
-                cni_plugin_version=$(curl -s https://api.github.com/repos/containernetworking/plugins/releases/latest | grep -Po '"tag_name":.*?[^\\]",' | awk -F  "\"" 'NR==1{print $4}')
-                curl -Lo cni-plugins.tgz "https://github.com/containernetworking/plugins/releases/download/${cni_plugin_version}/cni-plugins-$(uname | awk '{print tolower($0)}')-$(get_cpu_arch)-${cni_plugin_version}.tgz" > /dev/null
-                sudo mkdir -p /opt/containernetworking/plugins
-                sudo chown "$USER" -R /opt/containernetworking/plugins
-                tar xf cni-plugins.tgz -C /opt/containernetworking/plugins
-                popd
-            fi
+            install_deps kind cni-plugins
 
             # Deploy Kubernetes Cluster
             if ! sudo "$(command -v kind)" get clusters | grep -e k8s; then

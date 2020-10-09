@@ -16,6 +16,10 @@ if [[ "${DEBUG:-true}" == "true" ]]; then
     export PKG_DEBUG=true
 fi
 
+export PKG_GOLANG_VERSION=1.15.2
+export PKG_KIND_VERSION=0.9.0
+export PKG_CNI_PLUGINS_VERSION=0.8.7
+
 function install_deps {
     pkgs=""
     for pkg in "$@"; do

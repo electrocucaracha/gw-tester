@@ -32,7 +32,7 @@ if ! helm repo list | grep -e nsm; then
 fi
 # Install the nsm chart
 if ! helm ls | grep -e nsm; then
-    helm install nsm nsm/nsm --set spire.enable=false
+    helm install nsm nsm/nsm --set insecure=true
 fi
 for daemonset in $(kubectl get daemonset | grep nsm | awk '{print $1}'); do
     echo "Waiting for $daemonset to successfully rolled out"

@@ -13,6 +13,9 @@ os: linux
 git:
   depth: 1
 dist: bionic
+cache:
+  directories:
+    - /home/travis/.vagrant.d/boxes
 before_install:
   - eval "$(gimme stable)"
   - sudo apt update

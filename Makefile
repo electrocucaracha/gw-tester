@@ -7,7 +7,13 @@
 # http://www.apache.org/licenses/LICENSE-2.0
 ##############################################################################
 
+.PHONY: build
 build:
+	for image in enb pgw sgw mme ; do \
+		docker build -t electrocucaracha/$$image:0.7.5 --file $$image/Dockerfile $$image ; \
+	done
+	@docker image prune --force
+buildx:
 	for image in enb pgw sgw mme ; do \
 		sudo docker buildx build --platform linux/amd64,linux/arm64 -t electrocucaracha/$$image:0.7.5 --push --file $$image/Dockerfile $$image ; \
 	done

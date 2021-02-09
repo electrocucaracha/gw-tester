@@ -1,0 +1,37 @@
+---
+# SPDX-license-identifier: Apache-2.0
+##############################################################################
+# Copyright (c)
+# All rights reserved. This program and the accompanying materials
+# are made available under the terms of the Apache License, Version 2.0
+# which accompanies this distribution, and is available at
+# http://www.apache.org/licenses/LICENSE-2.0
+##############################################################################
+
+# the following vars must be specified:
+# #
+# #   ((make_action))                   the make action to be executed (build,integration-test)
+
+platform: linux
+
+image_resource:
+  type: docker-image
+  source:
+    repository: amidos/dcind
+    tag: 2.1.0
+
+inputs:
+  - name: src
+
+params:
+  MAKE_ACTION: ((.:make_action))
+
+run:
+  path: bash
+  args:
+    - -exc
+    - |
+      source /docker-lib.sh
+      start_docker
+
+      make $MAKE_ACTION --directory=src

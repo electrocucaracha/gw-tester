@@ -14,3 +14,8 @@ description: System Architecture Evolution Gateway
 type: application
 version: 0.1.0
 appVersion: 0.7.5
+dependencies:
+  - name: pgw
+    version: 0.1.0
+  - name: sgw
+    version: 0.1.0

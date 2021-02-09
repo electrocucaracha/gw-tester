@@ -20,13 +20,15 @@ before_install:
   - eval "$(gimme stable)"
   - sudo apt update
   - sudo apt-get install -y -qq -o=Dpkg::Use-Pty=0 --no-install-recommends curl
-install:
   - curl -fsSL http://bit.ly/install_pkg | PKG="docker make" bash
-script:
+install:
   - ./install.sh
-  - kubectl get all -A -o wide
+script:
   - ./deploy.sh
+after_success:
   - ./check.sh
+after_failure:
+  - kubectl get all -A -o wide
 env:
   - DEPLOYMENT_TYPE=k8s
   - DEPLOYMENT_TYPE=k8s PKG_MGR=helm

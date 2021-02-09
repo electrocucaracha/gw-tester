@@ -58,6 +58,7 @@ jobs:
         - curl -fsSL http://bit.ly/initVagrant | PROVIDER=libvirt bash
       script:
         - sudo -E vagrant up
+      after_success:
         - sudo -E vagrant ssh -- bash /vagrant/check.sh
       env:
         - DEPLOYMENT_TYPE=docker

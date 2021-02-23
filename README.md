@@ -1,3 +1,6 @@
+> This project is active but it has been moved to [its own organization](https://github.com/gw-tester/v1)
+> for better control during its development.
+
 # GW Tester Demo
 [![Build Status](https://travis-ci.org/electrocucaracha/gw-tester.png)](https://travis-ci.org/electrocucaracha/gw-tester)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
